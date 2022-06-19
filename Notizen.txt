@@ -1,0 +1,46 @@
+Grid
+
+Konstanten:
+	Entscheidungsintervall:  	dt 		(t)
+	Verbrauch:					mu		(Wh)
+	Anderungsgeschwindigkeit:	M 		(Wh/t)
+	Externer Strompreis:		P_e		(€/Wh)
+	Interner Strompreis:		P_i		(€/Wh)
+
+Funktionen:
+	Verbrauch:					V 		(W)
+	Output (Kraftwerk):			O_i 	(W)
+	Output (Extern):			O_e 	(W)
+
+Kostenfunktion: 				f 		(€/Wh*s^2)
+Entscheidung:					u 		(delta W)
+
+
+Verbraucher:
+	Haus: Konstanter Verbrauch C=mu um Faktor lambda gestreckt (lambda uniform verteilt auf [0, 2], neu gesampelt nach Entscheidung). 
+		Variablen: V(t) = lambda_t * C
+		ToDo: stetiges Samplen von Lambda; Zeitabhängiges C (Realdaten); mehrere Häuser; verschiedene Hausgrößen; lambda verteilung ändern;
+
+	ToDo: anderer Verbraucher?
+
+Stromerzeuger:
+	Kraftwerk: Entscheidung u gewünschte Veränderung der Strommenge, d.h. |u|<= M * dt. M ist die maximale Änderungsgeschwindigkeit. 
+		Variablen: 
+			O_i(t) = O(t') + sign(O(t')+u(t')-O(t)) * M * (t-t') 	(sign(0)=0)
+			f_i(t) = P_i * O_i(t)
+		ToDo: 	Wie passt sich das Kraftwerk an (linear, exp, quadr)?
+				(Kurve die Output Zuwachs parametrisiert; integriert um im Zeitintervall gewollten output erhalten; statt delay)
+
+	ToDo: erneuerbare? verschiedene Kraftwerke(verschiedene Änderungsgeschwindigkeit, verschiedene Kosten)? 
+
+Externer Stromspeicher:
+	 unbegrenzt, immer verfügbar, ohne delay (=> Bestrafung für schlechtes Wirtschaften). K
+	 Variablen: O_e(t) = max{V(t) - O_i(t), 0}; f_e(t) = P_e * O_e(t)
+
+Kostenfunktion:
+	f(t) = f_e(t) + f_i(t)
+
+
+Erweiterungen:
+	Zentrale/dezentrale Stromspeicher, Konstanten zeitabhängig zu machen,
+	erneuerbaren Energie(de/zentral)
