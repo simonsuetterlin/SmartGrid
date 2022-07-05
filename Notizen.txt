@@ -17,8 +17,8 @@ Entscheidung:					u 		(delta W)
 
 
 Verbraucher:
-	Haus: Konstanter Verbrauch C=mu um Faktor lambda gestreckt (lambda uniform verteilt auf [0, 2], neu gesampelt nach Entscheidung). 
-		Variablen: V(t) = lambda_t * C
+	Haus: Konstanter Verbrauch C=mu um Faktor lambda gestreckt (W(t-1) uniform verteilt auf [0, 2], neu gesampelt nach Entscheidung). 
+		Variablen: V(W) = W * C
 		ToDo: stetiges Samplen von Lambda; Zeitabhängiges C (Realdaten); mehrere Häuser; verschiedene Hausgrößen; lambda verteilung ändern;
 
 	ToDo: anderer Verbraucher?
@@ -26,8 +26,8 @@ Verbraucher:
 Stromerzeuger:
 	Kraftwerk: Entscheidung u gewünschte Veränderung der Strommenge, d.h. |u|<= M. M ist die maximale Änderungsgeschwindigkeit. 
 		Variablen: 
-			O_i(t, t', O_i(t'), u(t')) = O_i(t') + sign(O_i(t')+u(t')-O_i(t)) * M * (t-t') 	(sign(0)=0, t' in (0,1] ist vorheriger zeitpunkt)
-			L_i(t, t', O_i(t'), u(t')) = P_i * O_i(t, t', O_i(t'), u(t'))
+			O_i(k, O_i(t), u(t)) = O_i(t) + sign(u(t)) * M * k 	(sign(0)=0, k in [0,1] ist vorheriger zeitpunkt)
+			L_i(k, O_i(t), u(t)) = P_i * O_i(k, O_i(t), u(t))
 		ToDo: 	Wie passt sich das Kraftwerk an (linear, exp, quadr)?
 				(Kurve die Output Zuwachs parametrisiert; integriert um im Zeitintervall gewollten output erhalten; statt delay)
 
@@ -35,12 +35,12 @@ Stromerzeuger:
 
 Externer Stromspeicher:
 	 unbegrenzt, immer verfügbar, ohne delay (=> Bestrafung für schlechtes Wirtschaften). K
-	 Variablen: O_e(t, t', O_i(t'), u(t')) = max{V(t) - O_i(t, t', O_i(t'), u(t')), 0}; L_e(t) = P_e * O_e(t, t', O_i(t'), u(t'))
+	 Variablen: O_e(k, O_i(t), u(t)) = max{V(W(t)) - O_i(k, O_i(t), u(t)), 0}; L_e(k, O_i(t), u(t)) = P_e * O_e(k, O_i(t), u(t))
 
 Kostenfunktion:
-	L(t, x[t-1], u[t-1]) = integral{k = t-1 to t} (L_e(k, t-1, x[t-1][0], u[t-1]) + L_i(k, t-1, x[t-1][0], u(t-1)))
+	L(t, x[t-1], u[t-1]) = integral{k = t-1 to t} (L_e(k, x[t-1][0], u[t-1]) + L_i(k, x[t-1][0], u(t-1)))
 
-	f(t, x[t], u[t]) = (O_i(t, t+1, x[t][0], u[t]); V(t+1)) = x[t+1]
+	f(t, x[t], u[t]) = (O_i(1, x[t][0], u[t]); V(t+1)) = x[t+1]
 
 	min_u_x sum{t = 1 to T} L(t, x, u)
 	regard to: x[t+1] = f(t, x[t], u[t]) für alle t = 0, ..., T - 1
