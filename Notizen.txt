@@ -6,6 +6,8 @@ Konstanten:
 	Anderungsgeschwindigkeit:	M 		(Wh/t)
 	Externer Strompreis:		P_e		(€/Wh)
 	Interner Strompreis:		P_i		(€/Wh)
+	Maximaler Output			O_i_max
+	Maximaler Verbrauch 		V_max 
 
 Funktionen:
 	Verbrauch:					V 		(W)
@@ -14,6 +16,11 @@ Funktionen:
 
 Kostenfunktion: 				f 		(€/Wh*s^2)
 Entscheidung:					u 		(delta W)
+
+
+U = [-M,M] geschnitten ganze Zahlen
+O_i = [0, O_i_max] geschnitten natürliche Zahlen
+V = [0, V_max] geschnitten natürliche Zahlen
 
 
 Verbraucher:
@@ -26,7 +33,7 @@ Verbraucher:
 Stromerzeuger:
 	Kraftwerk: Entscheidung u gewünschte Veränderung der Strommenge, d.h. |u|<= M. M ist die maximale Änderungsgeschwindigkeit. 
 		Variablen: 
-			O_i(k, O_i(t), u(t)) = O_i(t) + sign(u(t)) * M * k 	(sign(0)=0, k in [0,1] ist vorheriger zeitpunkt)
+			O_i(k, O_i(t), u(t)) = O_i(t) + u(t) * k  	k in [0,1]
 			L_i(k, O_i(t), u(t)) = P_i * O_i(k, O_i(t), u(t))
 		ToDo: 	Wie passt sich das Kraftwerk an (linear, exp, quadr)?
 				(Kurve die Output Zuwachs parametrisiert; integriert um im Zeitintervall gewollten output erhalten; statt delay)
