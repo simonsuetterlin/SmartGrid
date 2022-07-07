@@ -1,22 +1,6 @@
 from rk4step import rk4step
 import numpy as np
 import casadi as ca
-import random
-
-"""
-Ts = .5
-N = 19
-x0 = np.array([1, 0])
-t_grid = np.linspace(0, Ts*N, N+1)
-t_span = [0, Ts*N]
-t0 = 0
-
-
-X_rk4 = np.zeros((x0.size, N+1))
-X_rk4[:,0] = x0
-for k in range(1, len(t_grid)):
-    X_rk4[:,k] = rk4step(f, Ts,  X_rk4[:,k-1], t0).full().flatten()
-"""
 
 
 P_e = 12
@@ -24,25 +8,19 @@ P_i = 10
 C = 50
 M = 5
 
-depth = 20
-dim_O = 15
-dim_V = 15
+depth = 5
+dim_O = 5
+dim_V = 5
 
 U = [-2, -1,0,1,2]
+V_change = [-2, -1, 0, 1, 2]
 O_range = list(range(dim_O))
 V_range = list(range(dim_V))
-V_change = np.array([-2, -1, 0, 1, 2])
-
 
 
 def L(x0, u, v):
     x1 = f(x0, u, v)
     return L_i(x0[0], x1[0]) + L_e(x0[0], x1[0], v)
-
-def f(x0, u, v):
-    o1 = x0[0] + u
-    v1 = x0[1] + v
-    return (o1, v1)
 
 def L_e(o0, o1, v):
     if(o0 >= v and o1 >= v):
@@ -59,8 +37,8 @@ def L_e(o0, o1, v):
 def L_i(o0, o1):
     return 0.5 * (o0 + o1) * P_i
 
-
 """
+
 def V(v):
     return v * C
 
@@ -89,6 +67,11 @@ def L(x0, u, v):
     r = F(x0=0)
     return(r['xf'])
 """
+
+def f(x0, u, v):
+    o1 = x0[0] + u
+    v1 = x0[1] + v
+    return (o1, v1)
 
 def calculate_cost_to_go_matrix_sequence():
     M = np.zeros((depth,dim_O,dim_V), dtype=float)
