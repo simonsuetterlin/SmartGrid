@@ -1,4 +1,4 @@
-from rk4step import rk4step
+#from rk4step import rk4step
 import numpy as np
 import casadi as ca
 
@@ -17,7 +17,7 @@ V_change = [-2, -1, 0, 1, 2]
 O_range = list(range(dim_O))
 V_range = list(range(dim_V))
 
-
+"""
 def L(x0, u, v):
     x1 = f(x0, u, v)
     return L_i(x0[0], x1[0]) + L_e(x0[0], x1[0], v)
@@ -54,19 +54,20 @@ def O_e(k, O_i_prev, u, v):
 def L_e(k, O_i_prev, u, v):
     return P_e * O_e(k, O_i_prev, u, v)
 
-# integrator wrong
+# integrator nicht mehr wrong, aber wahrscheinlich ineffizient
 def L(x0, u, v):
-    def f(k, v):
-        k = ca.SX.sym('k')
-        return L_e(k, x0[0], u, v) + L_i(k, x0[0], u)
+
 
     x = ca.SX.sym('x')
-    ode = {'x':x, 'p':v, 't':k,'ode':f}
+    k = ca.SX.sym('k')
+    ode = {'x':x, 't':k,'ode':P_e * ca.fmax(v * C - x0[0] + u * k, 0) + P_i * x0[0] + u * k}
 
-    F = ca.integrator('F', 'idas', ode,{'t0':0,'tf':1})
+    F = ca.integrator('F', 'idas', ode,{'t0':0,'tf':2})
     r = F(x0=0)
     return(r['xf'])
-"""
+
+
+
 
 def f(x0, u, v):
     o1 = x0[0] + u
