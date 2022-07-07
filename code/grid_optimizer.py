@@ -2,22 +2,25 @@
 import numpy as np
 import casadi as ca
 import random
+from grid_modules import 
 
-"""
-Ts = .5
-N = 19
-x0 = np.array([1, 0])
-t_grid = np.linspace(0, Ts*N, N+1)
-t_span = [0, Ts*N]
-t0 = 0
+class GridOptimizer:
+    def __init__(*modules: list of GridModules):
+        current_state = None# x0
+        
 
+    def get_next_state(self, x0, u, v):
+        '''
+        Calculates next position based on current 
+        '''
+        assert self.current_state, "No current state set."
+        o1 = self.currentstatex0[0] + u
+        v1 = x0[1] + v
+        return (o1, v1)
 
-X_rk4 = np.zeros((x0.size, N+1))
-X_rk4[:,0] = x0
-for k in range(1, len(t_grid)):
-    X_rk4[:,k] = rk4step(f, Ts,  X_rk4[:,k-1], t0).full().flatten()
-"""
-
+    def L(self, x0, u, v):
+        x1 = f(x0, u, v)
+        return L_i(x0[0], x1[0]) + L_e(x0[0], x1[0], v)
 
 P_e = 12
 P_i = 10
@@ -34,10 +37,7 @@ V_range = list(range(dim_V))
 V_change = np.array([-2, -1, 0, 1, 2])
 
 
-def f(x0, u, v):
-    o1 = x0[0] + u
-    v1 = x0[1] + v
-    return (o1, v1)
+
 
 """
 def L(x0, u, v):
@@ -154,5 +154,9 @@ def calculate_path_cost(x0, u, M_N_plus_1):
     else:
         return np.inf
 
-opt_step = calculate_optimal_step_matrix()
-print(opt_step)
+
+
+if __name__ == '__main__':
+    print("Nothing done")
+    opt_step = calculate_optimal_step_matrix()
+    print(opt_step)
