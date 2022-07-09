@@ -111,9 +111,6 @@ s.simulate(T=100)
 s.plot_path()
 
 """
-def V(v):
-    return v * C
-
 def O_i(k, O_i_prev, u):
     return O_i_prev + u * k
 
@@ -121,7 +118,7 @@ def L_i(k, O_i_prev, u):
     return P_i * O_i(k, O_i_prev, u)
 
 def O_e(k, O_i_prev, u, v):
-    return np.max([V(v) - O_i(k, O_i_prev, u), 0])
+    return np.max([v - O_i(k, O_i_prev, u), 0])
 
 def L_e(k, O_i_prev, u, v):
     return P_e * O_e(k, O_i_prev, u, v)
