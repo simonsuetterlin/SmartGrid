@@ -5,15 +5,31 @@ from scipy import stats
 from grid_optimizer import GridOptimizer
 from simulation import Simulator
 
-P_e = 15
+# set constants: prices, state-space, decision-space
+# and max expected change rate of consumption
+P_e = 12
 P_i = 10
+U = [-2, -1,0,1,2]
+O = list(range(20))
+V = list(range(20))
+V_max_change = 2
 
-U = [-3, -2, -1, 0, 1, 2, 3]
-O = list(range(15))
-V = list(range(15))
-V_max_change = 3
 
-class Model:
+class Model: 
+    """
+    The class Model collects all informations about a certain grid-model
+    and ist used as input for the class GridOptimizer.
+    
+    Args:
+        L_i, L_e: loss functions
+        P_i, P_e: costs
+        U, O, V (list): spaces of decision, output and consumption
+        distribution: expected distribution of the change of the consumption
+        
+    Methods:
+        L: calculates loss function of the whole model
+        f: calculates the next state of the model
+    """
     def __init__(self, L_i, L_e, P_i, P_e, U, O, V, distribution):
         self.L_i = L_i
         self.L_e = L_e
@@ -27,16 +43,33 @@ class Model:
         self.distribution = distribution
     
     def L(self, x0, x1):
+        """
+        Calculates the loss in the next intervall based on current and
+        next state.
+        
+        Args:
+            x0: current state
+            x1: next state
+        """
         return self.L_i(x0[0], x1[0]) + self.L_e(x0[0], x1[0], x1[1])
     
-    """
-    Calculates next state based on decision and new consum.
-    """
     def f(self, x0, u, v):
+        """
+        Calculates next state based on current state, decision and new consum.
+        
+        Args:
+            x0: current state
+            u: decision (change in output)
+            v: change in consum
+        """
         o1 = x0[0] + u
-        v1 = min(len(V)-1, max(x0[1] + v, 0))
-        if 0 > o1 or o1 >= len(V):
-            return None
+        # prohibits stearing out of bounds!
+        if o1 not in self.O:
+            raise ValueError('Value of the output is out of bounds by current control.')
+
+        # prohibits getting out of bounds, based on 
+        v1 = min(max(self.V), max(x0[1] + v, min(self.V)))
+        
         return (o1, v1)
     
 def discreet_uniform_distibution(a, b):
@@ -64,7 +97,7 @@ def L_i(o0, o1):
 uniform = discreet_uniform_distibution(a=-V_max_change, b=V_max_change)
 model = Model(L_i=L_i, L_e=L_e, P_i=P_i, P_e=P_e, U=U, O=O, V=V, distribution=uniform)
 grid_opt = GridOptimizer(model)
-grid_opt.calculate_optimal_step_matrix(depth = 5)
+grid_opt.calculate_cost_to_go_matrix_sequence(depth = 5)
 print(grid_opt.opt_dec_m)
 #print(grid_opt.cost_to_go_m)
 
