@@ -46,16 +46,16 @@ class GridOptimizer:
             choice = np.zeros((self.dim_O, self.dim_V), dtype=int)
             M = [np.zeros((self.dim_O, self.dim_V), dtype=float), np.zeros((self.dim_O, self.dim_V), dtype=float)]
             # iterately calculates the cost to go matrix from saved depth
-            for i in range(depth - self.max_iter_depth+1):
+            for i in range(depth - self.iter_depth+1):
                 if(i != 0):
                     M[i%2], choice = self.calculate_cost_to_go_matrix(M[(i-1)%2])
                 else:
-                    if self.max_iter_depth > 0:
-                        M[0] = self.max_cost_to_go_m
+                    if self.iter_depth > 0:
+                        M[0] = self.cost_to_go_m
                     else:
                         M[0] = self.calculate_cost_to_go_matrix_final_step()
             # set calculated attributes
-            self.cost_to_go_m =  M[(depth - self.max_iter_depth)%2]
+            self.cost_to_go_m =  M[(depth - self.iter_depth)%2]
             self.iter_depth = depth
             self.opt_dec_m = choice
 
@@ -68,7 +68,7 @@ class GridOptimizer:
             matrix with terminal costs
         """
         # initialize matrix
-        M = np.ndarray((self.dim_O, self.dim_V), dtype=float)
+        M = np.zeros((self.dim_O, self.dim_V), dtype=float)
         #for o_index in range(self.dim_O):
         #    for v_index in range(self.dim_V):
         #        M[o_index, v_index] = 0
