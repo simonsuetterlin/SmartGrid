@@ -1,7 +1,6 @@
 #from rk4step import rk4step
 import numpy as np
 import casadi as ca
-import random
 from scipy.stats import rv_continuous, rv_discrete
 from grid_optimizer import GridOptimizer
 
@@ -42,6 +41,7 @@ class UniformDiscretDistr(rv_discrete):
     def _pmf(self, k):
         return 1./(self.b + 1 - self.a)
 
+
 def L_e(o0, o1, v):
     if(o0 >= v and o1 >= v):
         return 0
@@ -63,3 +63,32 @@ grid_opt = GridOptimizer(model)
 grid_opt.calculate_optimal_step_matrix(depth = 5)
 print(grid_opt.max_opt_dec_m)
 #print(grid_opt.max_cost_to_go_m)
+
+"""
+def V(v):
+    return v * C
+
+def O_i(k, O_i_prev, u):
+    return O_i_prev + u * k
+
+def L_i(k, O_i_prev, u):
+    return P_i * O_i(k, O_i_prev, u)
+
+def O_e(k, O_i_prev, u, v):
+    return np.max([V(v) - O_i(k, O_i_prev, u), 0])
+
+def L_e(k, O_i_prev, u, v):
+    return P_e * O_e(k, O_i_prev, u, v)
+
+# integrator nicht mehr wrong, aber wahrscheinlich ineffizient
+def L(x0, u, v):
+
+
+    x = ca.SX.sym('x')
+    k = ca.SX.sym('k')
+    ode = {'x':x, 't':k,'ode':P_e * ca.fmax(v * C - x0[0] + u * k, 0) + P_i * x0[0] + u * k}
+
+    F = ca.integrator('F', 'idas', ode,{'t0':0,'tf':2})
+    r = F(x0=0)
+    return(r['xf'])
+"""
