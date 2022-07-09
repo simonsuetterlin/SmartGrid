@@ -24,7 +24,7 @@ P_i = 10
 C = 50
 M = 5
 
-depth = 20
+depth = 2
 dim_O = 15
 dim_V = 15
 
@@ -39,7 +39,7 @@ def f(x0, u, v):
     v1 = x0[1] + v
     return (o1, v1)
 
-"""
+#"""
 def L(x0, u, v):
     x1 = f(x0, u, v)
     return L_i(x0[0], x1[0]) + L_e(x0[0], x1[0], v)
@@ -85,7 +85,7 @@ def L(x0, u, v):
     F = ca.integrator('F', 'idas', ode,{'t0':0,'tf':2})
     r = F(x0=0)
     return(r['xf'])
-
+"""
 
 def calculate_cost_to_go_matrix_sequence():
     M = np.zeros((depth,dim_O,dim_V), dtype=float)
@@ -156,3 +156,6 @@ def calculate_path_cost(x0, u, M_N_plus_1):
 
 opt_step = calculate_optimal_step_matrix()
 print(opt_step)
+
+#final_ctg_matrix = calculate_cost_to_go_matrix_sequence()
+#print(final_ctg_matrix)
