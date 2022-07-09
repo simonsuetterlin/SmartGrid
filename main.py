@@ -1,21 +1,24 @@
 #from rk4step import rk4step
 import numpy as np
 import casadi as ca
-from scipy.stats import rv_discrete
+from scipy import stats
 from grid_optimizer import GridOptimizer
+from simulation import Simulator
 
-P_e = 12
+P_e = 15
 P_i = 10
 
-U = [-2, -1,0,1,2]
-O = list(range(20))
-V = list(range(20))
-V_max_change = 2
+U = [-3, -2, -1, 0, 1, 2, 3]
+O = list(range(15))
+V = list(range(15))
+V_max_change = 3
 
 class Model:
-    def __init__(self, L_i, L_e, U, O, V, distribution):
+    def __init__(self, L_i, L_e, P_i, P_e, U, O, V, distribution):
         self.L_i = L_i
         self.L_e = L_e
+        self.P_i = P_i
+        self.P_e = P_e
         self.U = U
         self.dim_O = len(O)
         self.dim_V = len(V)
@@ -35,12 +38,11 @@ class Model:
         if 0 > o1 or o1 >= len(V):
             return None
         return (o1, v1)
- 
     
-class UniformDiscretDistr(rv_discrete):
-    def _pmf(self, k):
-        return 1./(self.b + 1 - self.a)
-
+def discreet_uniform_distibution(a, b):
+    xk = np.arange(a, b+1)
+    pk = [1/len(xk) for i in range(len(xk))]
+    return stats.rv_discrete(name='uniform', values=(xk, pk))
 
 def L_e(o0, o1, v):
     if(o0 >= v and o1 >= v):
@@ -57,12 +59,21 @@ def L_e(o0, o1, v):
 def L_i(o0, o1):
     return 0.5 * (o0 + o1) * P_i
 
-uniform = UniformDiscretDistr(a=-V_max_change, b=V_max_change, name="uniform")
-model = Model(L_i=L_i, L_e=L_e, U=U, O=O, V=V, distribution=uniform)
+
+
+uniform = discreet_uniform_distibution(a=-V_max_change, b=V_max_change)
+model = Model(L_i=L_i, L_e=L_e, P_i=P_i, P_e=P_e, U=U, O=O, V=V, distribution=uniform)
 grid_opt = GridOptimizer(model)
 grid_opt.calculate_optimal_step_matrix(depth = 5)
-print(grid_opt.max_opt_dec_m)
-#print(grid_opt.max_cost_to_go_m)
+print(grid_opt.opt_dec_m)
+#print(grid_opt.cost_to_go_m)
+
+# simulate model
+s = Simulator(model, grid_opt.opt_dec_m)
+s.simulate(T=50)
+s.plot_path()
+s.simulate(T=50)
+s.plot_path()
 
 """
 def V(v):

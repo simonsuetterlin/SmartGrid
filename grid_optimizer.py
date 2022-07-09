@@ -14,30 +14,30 @@ class GridOptimizer:
         self.O = model.O
         self.V = model.V
         self.distribution = model.distribution
-        self.max_cost_to_go_m = np.zeros((self.dim_O, self.dim_V), dtype=float)
-        self.max_iter_depth = 0
-        self.max_opt_dec_m = None
+        self.cost_to_go_m = None
+        self.iter_depth = 0
+        self.opt_dec_m = None
 
     def calculate_cost_to_go_matrix_sequence(self, depth):
-        if self.max_iter_depth < depth:
+        if self.iter_depth < depth:
             #M = np.zeros((2, self.dim_O,self.dim_V), dtype=float)
             choice = np.zeros((self.dim_O, self.dim_V), dtype=int)
             M = [np.zeros((self.dim_O, self.dim_V), dtype=float), np.zeros((self.dim_O, self.dim_V), dtype=float)]
-            M[0] = self.max_cost_to_go_m
-            for i in range(depth - self.max_iter_depth+1):
+            M[0] = self.cost_to_go_m
+            for i in range(depth - self.iter_depth+1):
                 if(i != 0):
                     M[i%2], choice = self.calculate_cost_to_go_matrix(M[(i-1)%2])
                 else:
-                    if self.max_iter_depth > 0:
+                    if self.iter_depth > 0:
                         continue
                     M[i] = self.calculate_cost_to_go_matrix_final_step()
-            self.max_cost_to_go_m =  M[(depth - self.max_iter_depth)%2]
-            self.max_iter_depth = depth
-            self.max_opt_dec_m = choice
+            self.cost_to_go_m =  M[(depth - self.iter_depth)%2]
+            self.iter_depth = depth
+            self.opt_dec_m = choice
 
     # calculate matrix with includes indexes for actions U that are optimal for given x0 in matrix
     def calculate_optimal_step_matrix(self, depth):
-        if self.max_iter_depth < depth:
+        if self.iter_depth < depth:
             self.calculate_cost_to_go_matrix_sequence(depth=depth)
 
     # TODO change end score
