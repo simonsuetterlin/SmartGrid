@@ -55,3 +55,11 @@ Kostenfunktion:
 Erweiterungen:
 	Zentrale/dezentrale Stromspeicher, Konstanten zeitabhängig zu machen,
 	erneuerbaren Energie(de/zentral)
+    
+    
+    
+TODO:
+- kosten abhängig von control, kraftwerks änderung nicht mehr linear
+- verbrauch Stadt -> stetig
+- Batterie
+- Was ist noch interessant?
