@@ -76,10 +76,15 @@ class Model:
         
         return (o1, v1)
     
-def discreet_uniform_distibution(a, b):
+def discret_uniform_distibution(a, b):
     xk = np.arange(a, b+1)
     pk = [1/len(xk) for i in range(len(xk))]
     return stats.rv_discrete(name='uniform', values=(xk, pk))
+
+def discret_bernoulli_distribution(a, b):
+    xk = np.arange(a, b+1)
+    pk = [stats.binom.pmf(k=k, n=len(xk)-1, p=0.5) for k in range(len(xk))]
+    return stats.rv_discrete(name='bernoulli', values=(xk, pk))
 
 def L_e(o0, o1, v):
     if(o0 >= v and o1 >= v):
@@ -97,8 +102,9 @@ def L_i(o0, o1):
     return 0.5 * (o0 + o1) * P_i
 
 if __name__ == '__main__':
-    uniform = discreet_uniform_distibution(a=-V_max_change, b=V_max_change)
-    model = Model(L_i=L_i, L_e=L_e, P_i=P_i, P_e=P_e, U=U, O=O, V=V, distribution=uniform)
+    #uniform = discret_uniform_distibution(a=-V_max_change, b=V_max_change)
+    bernoulli = discret_bernoulli_distribution(a=-V_max_change, b=V_max_change)
+    model = Model(L_i=L_i, L_e=L_e, P_i=P_i, P_e=P_e, U=U, O=O, V=V, distribution=bernoulli)
     grid_opt = GridOptimizer(model)
     grid_opt.calculate_cost_to_go_matrix_sequence(depth = 5)
     # print(grid_opt.opt_dec_m)

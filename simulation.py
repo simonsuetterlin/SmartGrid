@@ -77,7 +77,7 @@ class Simulator:
         axs[1].legend()
         axs[1].grid(True)
         # loss subtracted by minimal loss
-        axs[2].axhline(0, label="min loss")
+        axs[2].hlines(0, xmin=0, xmax=len(t), label="min loss", color='black')
         axs[2].step(t, [self.L_path[i] - min_loss[i] for i in range(len(self.L_path))], label="subtracted loss")
         axs[2].step(t, [max_loss[i] - min_loss[i] for i in range(len(self.L_path))], label="subtracted max loss")
      
