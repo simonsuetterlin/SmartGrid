@@ -53,8 +53,8 @@ class Model:
         """
         L_i_out = self.L_i(x0[0], x1[0])
         L_e_out = self.L_e(x0[0], x1[0], x1[1])
-        assert L_i_out >= 0 or L_e_out >= 0, "LOSS NEGATIVE, {}, {}".format( L_e_out, L_i_out)
-        assert L_i_out + L_e_out >= self.P_i * x1[1], "MIN EXEPTION, {}, {}, {}, {}".format(x0,x1, L_e_out, L_i_out)
+        # assert L_i_out >= 0 or L_e_out >= 0, "LOSS NEGATIVE, {}, {}".format( L_e_out, L_i_out)
+        # assert L_i_out + L_e_out >= self.P_i * x1[1], "MIN EXEPTION, {}, {}, {}, {}".format(x0,x1, L_e_out, L_i_out)
         return L_i_out + L_e_out
     
     def f(self, x0, u, v):

@@ -27,20 +27,29 @@ class Simulator:
             x0 = x1
             
     def plot_path(self):
-        fig, axs = plt.subplots(2, 1, figsize=(8,5), dpi=150)
+        min_loss = self.get_min_loss()
+        max_loss = self.get_max_loss()
+
+        fig, axs = plt.subplots(3, 1, figsize=(14,9), dpi=150)
         t = np.arange(0, len(self.L_path))
         axs[0].plot(t, [i[0] for i in self.f_path], label="O")
         axs[0].step(t, [i[1] for i in self.f_path], label="V")
-        axs[0].set_ylabel('O and V')
+        axs[0].set_ylabel('O and V path')
         axs[0].legend()
         axs[0].grid(True)
-        axs[1].plot(self.L_path, label="loss")
-        axs[1].plot(self.get_min_loss(), label="min loss")
-        axs[1].plot(self.get_max_loss(), label="max loss")
+        axs[1].step(t, self.L_path, label="loss")
+        axs[1].step(t, min_loss, label="min loss")
+        axs[1].step(t, max_loss, label="max loss")
         axs[1].set_ylabel('Loss')
-        axs[1].set_xlabel('t')
         axs[1].legend()
         axs[1].grid(True)
+        axs[2].step(t, self.get_normalized_loss(min_loss, max_loss), label="normalized loss")
+        axs[2].axhline(np.mean(self.get_normalized_loss(min_loss, max_loss)), label="average")
+        axs[2].set_ylabel('Loss')
+        axs[2].set_xlabel('t')
+        axs[2].legend()
+        axs[2].grid(True)
+
         plt.show()
 
     def get_min_loss(self):
@@ -49,3 +58,5 @@ class Simulator:
     def get_max_loss(self):
         return [self.model.P_e * self.f_path[i][1] for i in range(len(self.L_path))]
 
+    def get_normalized_loss(self, min_loss, max_loss):
+        return [(self.L_path[i] - min_loss[i])/(max(max_loss[i], self.L_path[i]) - min_loss[i]) if (max(max_loss[i], self.L_path[i]) - min_loss[i]) > 0 else 0 for i in range(len(self.L_path))]
