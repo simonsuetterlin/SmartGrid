@@ -11,8 +11,8 @@ class GridOptimizer:
         self.U = model.U
         self.dim_O = model.dim_O
         self.dim_V = model.dim_V
-        self.O_range = model.O_range
-        self.V_range = model.V_range
+        self.O = model.O
+        self.V = model.V
         self.distribution = model.distribution
         self.max_cost_to_go_m = np.zeros((self.dim_O, self.dim_V), dtype=float)
         self.max_iter_depth = 0
@@ -56,7 +56,7 @@ class GridOptimizer:
         choice = np.ndarray((self.dim_O, self.dim_V), dtype=int)
         for o_index in range(self.dim_O):
             for v_index in range(self.dim_V):
-                x0 = (self.O_range[o_index], self.V_range[v_index])
+                x0 = (self.O[o_index], self.V[v_index])
                 M[o_index,v_index], choice[o_index,v_index] = self.cost_to_go(x0, cost_matrix)
         return M, choice
         # [[cost_to_go((o,v), U, cost_matrix) for o in range(dim_O)] for v in range(dim_V)]
@@ -75,9 +75,6 @@ class GridOptimizer:
         # Calculate costs of one decision as expected value with random variable "next possible state".
         if 0 <= x0[0] + u < self.dim_O:
             # calculate expected value
-            summ = 0
-            num_v_in_range = 0
-            #rv_f = lambda k: self.L(x0, self.f(x0, u, k)) + cost_matrix[self.f(x0, u, k)]
             def rv_f(k):
                 if isinstance(k, np.ndarray):
                     ls = []

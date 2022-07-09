@@ -1,7 +1,7 @@
 #from rk4step import rk4step
 import numpy as np
 import casadi as ca
-from scipy.stats import rv_continuous, rv_discrete
+from scipy.stats import rv_discrete
 from grid_optimizer import GridOptimizer
 
 P_e = 12
