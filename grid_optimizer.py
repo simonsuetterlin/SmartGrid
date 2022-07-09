@@ -24,15 +24,7 @@ class GridOptimizer:
             and saves it to cost_to_go_m        
     """
     def __init__(self, model):
-        #self.current_state = None
-        self.L = model.L
-        self.f = model.f
-        self.U = model.U
-        self.dim_O = model.dim_O
-        self.dim_V = model.dim_V
-        self.O = model.O
-        self.V = model.V
-        self.distribution = model.distribution
+        self.model = model
         self.iter_depth = 0
         self.cost_to_go_m = None
         self.opt_dec_m = None
@@ -50,10 +42,9 @@ class GridOptimizer:
             self.opt_dec_m: calculated optimal decision for this depth
         """
         if self.iter_depth < depth:
-            #M = np.zeros((2, self.dim_O,self.dim_V), dtype=float)
             # initialize matricies
-            choice = np.zeros((self.dim_O, self.dim_V), dtype=int)
-            M = [np.zeros((self.dim_O, self.dim_V), dtype=float), np.zeros((self.dim_O, self.dim_V), dtype=float)]
+            choice = np.zeros(self.model.dim, dtype=int)
+            M = [np.zeros(self.model.dim, dtype=float), np.zeros(self.model.dim, dtype=float)]
             # iterately calculates the cost to go matrix from saved depth
             for i in range(depth - self.iter_depth+1):
                 if(i != 0):
@@ -77,8 +68,8 @@ class GridOptimizer:
             matrix with terminal costs
         """
         # initialize matrix
-        M = np.zeros((self.dim_O, self.dim_V), dtype=float)
-        #M = np.array([[func for v_index in range(self.dim_V)] for o_index in range(self.dim_O)])
+        M = np.zeros(self.model.dim, dtype=float)
+        #M = np.array([[func for v_index in range(self.model.dim_V)] for o_index in range(self.model.dim_O)])
         return M
 
     def calculate_cost_to_go_matrix(self, cost_matrix):
@@ -93,10 +84,11 @@ class GridOptimizer:
             cost and decision matrix
         """
         # list comprehension to iterate over rows and columns
-        matr = np.array([[self.cost_to_go((self.O[o_index], self.V[v_index]), cost_matrix) for v_index in range(self.dim_V)] for o_index in range(self.dim_O)])
+        matr = np.array([[[self.cost_to_go((self.model.V[v_index], self.model.O[o_index], self.model.B[b_index]), cost_matrix) for b_index in range(self.model.dim_B)] for v_index in range(self.model.dim_V)] for o_index in range(self.model.dim_O)])
+        # matr = np.array([self.cost_to_go(tuple([self.model.state[i][j] for i, j in enumerate(index)]), cost_matrix) for index in look_up_table])
         # extract cost-to-go-matrix and decision-matrix
-        cost_to_go_matrix = matr[:,:,0]
-        decision_matrix = matr[:,:,1].astype(int)
+        cost_to_go_matrix = matr[:,:,:,0]
+        decision_matrix = matr[:,:,:,1].astype(int)
         return cost_to_go_matrix, decision_matrix
         
 
@@ -112,11 +104,11 @@ class GridOptimizer:
             min expected loss and corresponding control
         """
         # calculates the path cost for every possible control
-        step_cost_to_go_array = [self.calculate_path_cost(x0, u, cost_matrix) for u in self.U]
+        step_cost_to_go_array = [self.calculate_path_cost(x0, u, cost_matrix) for u in self.model.U]
         # get index of minimum
         min_index = np.argmin(step_cost_to_go_array)
         # returns minimal costs and the control to the minimal cost
-        return step_cost_to_go_array[min_index], self.U[min_index]
+        return step_cost_to_go_array[min_index], self.model.U[min_index]
 
     def calculate_path_cost(self, x0, u, cost_matrix):
         """
@@ -131,7 +123,7 @@ class GridOptimizer:
         Returns:
             expected loss or np.inf, if state doesn't allow control u
         """
-        if x0[0] + u in self.O:
+        if x0[0] + u in self.model.O:
             def rv_loss(v):
                 """
                 Calculates loss based on next conumption.
@@ -143,8 +135,19 @@ class GridOptimizer:
                 Returns:
                     loss
                 """
-                x1 = self.f(x0, u, v)
-                return self.L(x0, x1) + cost_matrix[x1]
+                x1 = self.model.f(x0, u, v)
+                return self.model.L(x0, x1) + cost_matrix[x1]
             # calculate expected value of rv_loss based on given distribution
-            return self.distribution.expect(np.vectorize(rv_loss))
+            return self.model.distribution.expect(np.vectorize(rv_loss))
         return np.inf
+
+    
+def look_up_table(dim):
+    n = len(dim)
+    ls = []
+    for i in range(n):
+        transposition = list(range(n))
+        transposition[i], transposition[n-1] = n-1, i
+        x = np.transpose(np.transpose(np.zeros(dim, dtype=int), axes=transposition) + np.arange(dim[i]), axes=transposition)
+        ls.append(x)
+    return np.stack(ls, axis=n)
