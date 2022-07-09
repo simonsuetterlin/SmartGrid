@@ -51,7 +51,11 @@ class Model:
             x0: current state
             x1: next state
         """
-        return self.L_i(x0[0], x1[0]) + self.L_e(x0[0], x1[0], x1[1])
+        L_i_out = self.L_i(x0[0], x1[0])
+        L_e_out = self.L_e(x0[0], x1[0], x1[1])
+        assert L_i_out >= 0 or L_e_out >= 0, "LOSS NEGATIVE, {}, {}".format( L_e_out, L_i_out)
+        assert L_i_out + L_e_out >= self.P_i * x1[1], "MIN EXEPTION, {}, {}, {}, {}".format(x0,x1, L_e_out, L_i_out)
+        return L_i_out + L_e_out
     
     def f(self, x0, u, v):
         """
@@ -79,15 +83,15 @@ def discreet_uniform_distibution(a, b):
 
 def L_e(o0, o1, v):
     if(o0 >= v and o1 >= v):
-        return 0
+        return 0.0
     elif(o0 < v and o1 < v):
         return 0.5*(v - o0 + v - o1) * P_e
     else:
         t = (v - o0)/(o1-o0)
         if(o0 < v and o1 >= v):
-            return 0.5 * (o1 - v) * (1-t) * P_e
+            return 0.5 * (v - o0) * t * P_e
         elif(o0 >= v and o1 < v):
-            return 0.5 * (o0 - v) * t * P_e 
+            return 0.5 * (v - o1) * (1 - t) * P_e 
 
 def L_i(o0, o1):
     return 0.5 * (o0 + o1) * P_i
@@ -98,14 +102,12 @@ uniform = discreet_uniform_distibution(a=-V_max_change, b=V_max_change)
 model = Model(L_i=L_i, L_e=L_e, P_i=P_i, P_e=P_e, U=U, O=O, V=V, distribution=uniform)
 grid_opt = GridOptimizer(model)
 grid_opt.calculate_cost_to_go_matrix_sequence(depth = 5)
-print(grid_opt.opt_dec_m)
+#print(grid_opt.opt_dec_m)
 #print(grid_opt.cost_to_go_m)
 
 # simulate model
 s = Simulator(model, grid_opt.opt_dec_m)
-s.simulate(T=50)
-s.plot_path()
-s.simulate(T=50)
+s.simulate(T=100)
 s.plot_path()
 
 """
