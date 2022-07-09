@@ -96,19 +96,18 @@ def L_e(o0, o1, v):
 def L_i(o0, o1):
     return 0.5 * (o0 + o1) * P_i
 
+if __name__ == '__main__':
+    uniform = discreet_uniform_distibution(a=-V_max_change, b=V_max_change)
+    model = Model(L_i=L_i, L_e=L_e, P_i=P_i, P_e=P_e, U=U, O=O, V=V, distribution=uniform)
+    grid_opt = GridOptimizer(model)
+    grid_opt.calculate_cost_to_go_matrix_sequence(depth = 5)
+    # print(grid_opt.opt_dec_m)
+    # print(grid_opt.cost_to_go_m)
 
-
-uniform = discreet_uniform_distibution(a=-V_max_change, b=V_max_change)
-model = Model(L_i=L_i, L_e=L_e, P_i=P_i, P_e=P_e, U=U, O=O, V=V, distribution=uniform)
-grid_opt = GridOptimizer(model)
-grid_opt.calculate_cost_to_go_matrix_sequence(depth = 5)
-#print(grid_opt.opt_dec_m)
-#print(grid_opt.cost_to_go_m)
-
-# simulate model
-s = Simulator(model, grid_opt.opt_dec_m)
-s.simulate(T=100)
-s.plot_path()
+    # simulate model
+    s = Simulator(model, grid_opt.opt_dec_m)
+    s.simulate(T=100)
+    s.plot_path()
 
 """
 def V(v):

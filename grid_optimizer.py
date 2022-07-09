@@ -11,8 +11,17 @@ class GridOptimizer:
     Arg:
         model(GridModel): the model that should be controlled
         
-    Methods:
+    Attributes:
+        iter_depth: Depth to which the cost-to-go-function has been calculated
+        cost_to_go_m: Evaluation of the cost-to-go-function
+        opt_dec_m: Optimal decision based on cost_to_go_m
         
+    Methods:
+        L: loss function
+        f: step function
+        calculate_cost_to_go_matrix_sequence(depth): 
+            evaluates the cost-to-go-function to certain depth
+            and saves it to cost_to_go_m        
     """
     def __init__(self, model):
         #self.current_state = None
@@ -30,7 +39,7 @@ class GridOptimizer:
 
     def calculate_cost_to_go_matrix_sequence(self, depth):
         """
-        Calculates the cost to go matrix to the specified depth
+        Calculates the cost to go matrix to the specified depth.
         
         Args:
             depth
@@ -69,14 +78,9 @@ class GridOptimizer:
         """
         # initialize matrix
         M = np.zeros((self.dim_O, self.dim_V), dtype=float)
-        #for o_index in range(self.dim_O):
-        #    for v_index in range(self.dim_V):
-        #        M[o_index, v_index] = 0
-        #        # end costs are zeros at the moment, possible change
-        #        # e.g. M[o_index,v_index] = np.abs(o_index - v_index) * (2 if o_index - v_index > 0 else 1)
+        #M = np.array([[func for v_index in range(self.dim_V)] for o_index in range(self.dim_O)])
         return M
 
-    # TODO optimieren mit list comprehension?
     def calculate_cost_to_go_matrix(self, cost_matrix):
         """
         Evaluates the cost to go function for every possible state
@@ -88,18 +92,13 @@ class GridOptimizer:
         Returns:
             cost and decision matrix
         """
-        # initialize matricies
-        M = np.ndarray((self.dim_O, self.dim_V), dtype=float)
-        choice = np.ndarray((self.dim_O, self.dim_V), dtype=int)
-        # iterates over lines and rows
-        for o_index in range(self.dim_O):
-            for v_index in range(self.dim_V):
-                # calculates current state
-                x0 = (self.O[o_index], self.V[v_index])
-                # calculates expected cost for this state and optimal decision
-                M[o_index,v_index], choice[o_index,v_index] = self.cost_to_go(x0, cost_matrix)
-        return M, choice
-        # [[cost_to_go(, U, cost_matrix) for o in range(dim_O)] for v in range(dim_V)]
+        # list comprehension to iterate over rows and columns
+        matr = np.array([[self.cost_to_go((self.O[o_index], self.V[v_index]), cost_matrix) for v_index in range(self.dim_V)] for o_index in range(self.dim_O)])
+        # extract cost-to-go-matrix and decision-matrix
+        cost_to_go_matrix = matr[:,:,0]
+        decision_matrix = matr[:,:,1].astype(int)
+        return cost_to_go_matrix, decision_matrix
+        
 
     def cost_to_go(self, x0, cost_matrix):
         """
