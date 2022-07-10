@@ -63,3 +63,6 @@ TODO:
 - verbrauch Stadt -> stetig
 - Batterie
 - Was ist noch interessant?
+- tests schreiben
+- liste an erwarteten erscheinungen aufschreiebn
+- realdaten

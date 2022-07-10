@@ -24,8 +24,8 @@ class Model:
     
     Args:
         L_i, L_e: loss functions
-        P_i, P_e: costs
-        U, O, V (list): spaces of decision, output and consumption
+        P_i, P_e, P_b: costs
+        U, O, V, B (list): spaces of decision, output and consumption
         distribution: expected distribution of the change of the consumption
         
     Methods:
@@ -46,6 +46,7 @@ class Model:
         self.dim_B = len(B)
         self.dim = (self.dim_O, self.dim_V, self.dim_B)
         self.state = (self.O, self.V, self.B)
+        self.distribution_name = distribution
         self.set_distribution(distribution)
     
     def __str__(self):
@@ -55,7 +56,7 @@ class Model:
             f"{'Consum:':>15}\t({np.min(self.V)}, {np.max(self.V)}, {self.dim_V})\n"
             f"{'Output:':>15}\t({np.min(self.O)}, {np.max(self.O)}, {self.dim_O})\n"
             f"{'Battery:':>15}\t({np.min(self.B)}, {np.max(self.B)}, {self.dim_B})\n"
-            f"{'Distribution:':>15}\t{self.distribution}"
+            f"{'Distribution:':>15}\t{self.distribution_name}"
                    )
     
     def set_distribution(self, distribution):
