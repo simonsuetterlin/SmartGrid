@@ -3,6 +3,19 @@ import numpy as np
 import casadi as ca
 import random
 
+def look_up_table(dim):
+    n = len(dim)
+    size = np.prod(dim)
+    ls = []
+    matr_index = np.empty(size, dtype=tuple)
+    for i in range(n):
+        transposition = list(range(n))
+        transposition[i], transposition[n-1] = n-1, i
+        x = np.transpose(np.transpose(np.zeros(dim, dtype=int), axes=transposition) + np.arange(dim[i]), axes=transposition)
+        ls.append(np.reshape(x, newshape=size))
+    matr_index[:] = list(zip(*ls))
+    return np.reshape(matr_index, newshape=dim)
+
 
 class GridOptimizer:
     """
@@ -41,12 +54,15 @@ class GridOptimizer:
             self.cost_to_go_m: calculated cost to go matrix for this depth
             self.opt_dec_m: calculated optimal decision for this depth
         """
+        assert depth > 0 and isinstance(depth, int), "Depth must be non negative integer."
         if self.iter_depth < depth:
             # initialize matricies
             choice = np.zeros(self.model.dim, dtype=int)
             M = [np.zeros(self.model.dim, dtype=float), np.zeros(self.model.dim, dtype=float)]
             # iterately calculates the cost to go matrix from saved depth
-            for i in range(depth - self.iter_depth+1):
+            depth_to_go = depth - self.iter_depth + 1
+            for i in range(depth_to_go):
+                print(f"{f'Reached depth {i} from {depth_to_go}:':<25}\t {100. * i / depth_to_go:5.1f}%" , end="\r")
                 if(i != 0):
                     M[i%2], choice = self.calculate_cost_to_go_matrix(M[(i-1)%2])
                 else:
@@ -55,6 +71,7 @@ class GridOptimizer:
                     else:
                         M[0] = self.calculate_cost_to_go_matrix_final_step()
             # set calculated attributes
+            print(f"{'Finished:':<25}\t {100. * depth_to_go/depth_to_go:.1f}%")
             self.cost_to_go_m =  M[(depth - self.iter_depth)%2]
             self.iter_depth = depth
             self.opt_dec_m = choice
@@ -84,11 +101,13 @@ class GridOptimizer:
             cost and decision matrix
         """
         # list comprehension to iterate over rows and columns
-        matr = np.array([[[self.cost_to_go((self.model.V[v_index], self.model.O[o_index], self.model.B[b_index]), cost_matrix) for b_index in range(self.model.dim_B)] for v_index in range(self.model.dim_V)] for o_index in range(self.model.dim_O)])
-        # matr = np.array([self.cost_to_go(tuple([self.model.state[i][j] for i, j in enumerate(index)]), cost_matrix) for index in look_up_table])
+        # matr = np.array([[[self.cost_to_go((self.model.V[v_index], self.model.O[o_index], self.model.B[b_index]), cost_matrix) for b_index in range(self.model.dim_B)] for v_index in range(self.model.dim_V)] for o_index in range(self.model.dim_O)])
+        f = lambda index: self.cost_to_go(index, cost_matrix)
+        matr = np.vectorize(f)(look_up_table(self.model.dim))
+        # matr = np.array([self.cost_to_go([self.model.state[i][j] for i, j in enumerate(index)], cost_matrix) for index in look_up_table])
         # extract cost-to-go-matrix and decision-matrix
-        cost_to_go_matrix = matr[:,:,:,0]
-        decision_matrix = matr[:,:,:,1].astype(int)
+        cost_to_go_matrix = matr[0]
+        decision_matrix = matr[1].astype(int)
         return cost_to_go_matrix, decision_matrix
         
 
@@ -141,13 +160,4 @@ class GridOptimizer:
             return self.model.distribution.expect(np.vectorize(rv_loss))
         return np.inf
 
-    
-def look_up_table(dim):
-    n = len(dim)
-    ls = []
-    for i in range(n):
-        transposition = list(range(n))
-        transposition[i], transposition[n-1] = n-1, i
-        x = np.transpose(np.transpose(np.zeros(dim, dtype=int), axes=transposition) + np.arange(dim[i]), axes=transposition)
-        ls.append(x)
-    return np.stack(ls, axis=n)
+  

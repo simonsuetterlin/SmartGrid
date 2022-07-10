@@ -11,10 +11,10 @@ P_e = 20
 P_i = 10
 P_b = 5
 U = [-2, -1,0,1,2]
-O = list(range(13))
-V = list(range(13))
-B = list(range(4))
-V_max_change = 3
+O = list(range(11))
+V = list(range(11))
+B = list(range(5))
+V_max_change = 4
 
 
 class Model: 
@@ -46,7 +46,17 @@ class Model:
         self.dim_B = len(B)
         self.dim = (self.dim_O, self.dim_V, self.dim_B)
         self.state = (self.O, self.V, self.B)
-        self.set_distribution(distribution)     
+        self.set_distribution(distribution)
+    
+    def __str__(self):
+        return (
+            f"This grid model has following dimensions and assumptions:\n"
+            f"{'Control:':>15}\t({np.min(self.U)}, {np.max(self.U)}, {len(self.U)})\n"
+            f"{'Consum:':>15}\t({np.min(self.V)}, {np.max(self.V)}, {self.dim_V})\n"
+            f"{'Output:':>15}\t({np.min(self.O)}, {np.max(self.O)}, {self.dim_O})\n"
+            f"{'Battery:':>15}\t({np.min(self.B)}, {np.max(self.B)}, {self.dim_B})\n"
+            f"{'Distribution:':>15}\t{self.distribution}"
+                   )
     
     def set_distribution(self, distribution):
         """
@@ -69,12 +79,9 @@ class Model:
             x0: current state
             x1: next state
         """
-        #L_i_out = self.L_i(x0[0], x1[0])
-        #L_e_out = self.L_e(x0[0], x1[0], x1[1])
-        # assert L_i_out >= 0 or L_e_out >= 0, "LOSS NEGATIVE, {}, {}".format( L_e_out, L_i_out)
-        # assert L_i_out + L_e_out >= self.P_i * x1[1], "MIN EXEPTION, {}, {}, {}, {}".format(x0,x1, L_e_out, L_i_out)
-        #return L_i_out + L_e_out
-        return np.sum([l(x0, x1) for l in self.L_list])
+        L_eval = np.array([l(x0, x1) for l in self.L_list])
+        assert np.all(L_eval >= 0), "LOSS NEGATIVE, {}".format( L_eval)
+        return np.sum(L_eval)
     
     def f(self, x0, u, v):
         """
@@ -94,9 +101,14 @@ class Model:
         # prohibits getting out of bounds, based on 
         v1 = min(max(self.V), max(x0[1] + v, min(self.V)))
         
-        deficit = deficit_O(x0, (o1, v1, 0))
-        overflow_prev, overflow_after = overflow_O(x0, (o1, v1, 0))
-        b1 = int(min(max(x0[2] - deficit + overflow_prev, 0) + overflow_after, np.max(self.B)))
+        overflow = np.sum(overflow_O(x0, (o1, v1, 0)))
+        battery_used = battery_usage(x0, (o1, v1, 0))
+        # calculates new battery charge:
+        # current state + overflow of own power plant - drain of battery
+        # but respecting that it can't be overcharged
+        # for simplicity b1 is kept as integer, since there is loss when charging
+        # we always round to the smaller integer.
+        b1 = int(min(x0[2] + overflow - battery_used, np.max(self.B)))
         
         return (o1, v1, b1)
 
@@ -127,14 +139,14 @@ def battery_usage(x0, x1):
     overflow = overflow_O(x0, x1)
     return min(x0[2] + overflow[0], deficit)
 
-def L_e(x0, x1):
-    return (deficit_O(x0, x1) - battery_usage(x0, x1)) * P_e
-
 def L_i(x0, x1):
     return produce_O(x0, x1) * P_i
 
 def L_b(x0, x1):
     return battery_usage(x0, x1) * P_b
+
+def L_e(x0, x1):
+    return (deficit_O(x0, x1) - battery_usage(x0, x1)) * P_e
 
 
 if __name__ == '__main__':
