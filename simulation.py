@@ -93,7 +93,7 @@ class Simulator:
         axs[2].legend()
         axs[2].grid(True)
         # loss subtracted by minimal loss
-        axs[3].hlines(0, xmin=0, xmax=len(t), label="min loss", color='black')
+        axs[3].hlines(0, xmin=0, xmax=len(t)-1, label="min loss", color='black')
         axs[3].step(t[1:], [self.L_path[i] - min_loss[i] for i in range(len(self.L_path))], label="subtracted loss")
         axs[3].step(t[1:], [max_loss[i] - min_loss[i] for i in range(len(self.L_path))], label="subtracted max loss")
         axs[3].set_ylabel('Loss')
@@ -101,7 +101,7 @@ class Simulator:
         axs[3].legend()
         axs[3].grid(True)
         # cumulated losss substr.
-        axs[4].hlines(0, xmin=0, xmax=len(t), label="min loss", color='black')
+        axs[4].hlines(0, xmin=0, xmax=len(t)-1, label="min loss", color='black')
         axs[4].step(t[1:], np.cumsum([self.L_path[i] - min_loss[i] for i in range(len(self.L_path))]), label="cum subtracted loss")
         axs[4].step(t[1:], np.cumsum([max_loss[i] - min_loss[i] for i in range(len(self.L_path))]), label="cum subtracted max loss")
         axs[4].set_ylabel('Loss')
