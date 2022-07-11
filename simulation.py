@@ -2,6 +2,8 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 
+
+# TODO Compare models 
 class Simulator:
     """
     Class that simulates the model with the calculated optimal step matrix.
@@ -31,6 +33,7 @@ class Simulator:
             T: current state
             O_start: initialization of O
             V_start: initialization of V
+            B_start: initialization of B
             V_realisation: realisation of the random walk of V
         """
         # reset path if it has been calculated before

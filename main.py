@@ -13,7 +13,7 @@ P_b = 5
 U = [-2, -1,0,1,2]
 O = list(range(11))
 V = list(range(11))
-B = list(range(5))
+B = list(range(11))
 V_max_change = 4
 
 
@@ -151,17 +151,23 @@ def L_e(x0, x1):
 
 
 if __name__ == '__main__':
-    model = Model(L_list=[L_i, L_e, L_b], P_i=P_i, P_e=P_e, P_b=P_b, U=U, O=O, V=V, B=B, distribution="binom")
-    grid_opt = GridOptimizer(model)
-    grid_opt.calculate_cost_to_go_matrix_sequence(depth = 5)
+    model1 = Model(L_list=[L_i, L_e, L_b], P_i=P_i, P_e=P_e, P_b=P_b, U=U, O=O, V=V, B=B, distribution="binom")
+    model2 = Model(L_list=[L_i, L_e, L_b], P_i=P_i, P_e=P_e, P_b=P_b, U=U, O=O, V=V, B=[0], distribution="binom")
+    grid_opt1 = GridOptimizer(model1)
+    grid_opt2 = GridOptimizer(model2)
+    grid_opt1.calculate_cost_to_go_matrix_sequence(depth = 5)
+    grid_opt2.calculate_cost_to_go_matrix_sequence(depth = 5)
 
     # print(grid_opt.opt_dec_m)
     # print(grid_opt.cost_to_go_m)
 
     # simulate model
-    s = Simulator(model, grid_opt.opt_dec_m)
-    s.simulate(T=100)
-    s.plot_path()
+    s1 = Simulator(model1, grid_opt1.opt_dec_m)
+    s1.simulate(T=100)
+    s1.plot_path()
+    s2 = Simulator(model2, grid_opt2.opt_dec_m)
+    s2.simulate(T=100)
+    s2.plot_path()
 
 """
 def O_i(k, O_i_prev, u):
