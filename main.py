@@ -2,10 +2,10 @@
 import numpy as np
 import casadi as ca
 from scipy import stats
-from grid_optimizer import GridOptimizer
-from simulation import Simulator
-from model import GridModel
-from help_functions import *
+from code.grid_optimizer import GridOptimizer
+from code.simulation import Simulator
+from code.model import GridModel
+from code.help_functions import *
 
 # set constants: prices, state-space, decision-space
 # and max expected change rate of consumption

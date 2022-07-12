@@ -2,7 +2,7 @@
 import numpy as np
 import casadi as ca
 import random
-from look_up_table import look_up_table
+from code.look_up_table import look_up_table
 
 class GridOptimizer:
     """

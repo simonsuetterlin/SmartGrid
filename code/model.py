@@ -1,6 +1,6 @@
 from scipy import stats
 import numpy as np
-from help_functions import battery_usage, overflow_O
+from code.help_functions import battery_usage, overflow_O
 
 class GridModel: 
     """
