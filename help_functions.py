@@ -1,0 +1,35 @@
+import numpy as np
+
+def produce_O(x0, x1):
+    return 0.5 * (x0[0] + x1[0])
+
+def overflow_O(x0, x1):
+    o0 = x0[0]
+    o1, v1 = x1[:2]
+    if(o0 > v1 and o1 > v1):
+        return [0., 0.5*(o0 + o1 - 2 * v1)]
+    elif(o0 <= v1 and o1 <= v1):
+        return [0., 0.]
+    else:
+        t = (v1 - o0)/(o1-o0)
+        if(o0 <= v1 and o1 > v1):
+            return [0., 0.5 * (o1 - v1) * (1 - t)]
+        elif(o0 > v1 and o1 <= v1):
+            return [0.5 * (o0 - v1) * t, 0.]
+
+def deficit_O(x0, x1):
+    return x1[1] + np.sum(overflow_O(x0, x1)) - produce_O(x0, x1)        
+
+def battery_usage(x0, x1, max_charge):
+    deficit = deficit_O(x0, x1)
+    overflow = overflow_O(x0, x1)
+    return min(x0[2] + overflow[0], max_charge, deficit)
+
+def L_i(x0, x1):
+    return produce_O(x0, x1) * P_i
+
+def L_b(x0, x1, max_charge):
+    return battery_usage(x0, x1, max_charge) * P_b
+
+def L_e(x0, x1, max_charge):
+    return (deficit_O(x0, x1) - battery_usage(x0, x1, max_charge)) * P_e

@@ -2,20 +2,7 @@
 import numpy as np
 import casadi as ca
 import random
-
-def look_up_table(dim):
-    n = len(dim)
-    size = np.prod(dim)
-    ls = []
-    matr_index = np.empty(size, dtype=tuple)
-    for i in range(n):
-        transposition = list(range(n))
-        transposition[i], transposition[n-1] = n-1, i
-        x = np.transpose(np.transpose(np.zeros(dim, dtype=int), axes=transposition) + np.arange(dim[i]), axes=transposition)
-        ls.append(np.reshape(x, newshape=size))
-    matr_index[:] = list(zip(*ls))
-    return np.reshape(matr_index, newshape=dim)
-
+from look_up_table import look_up_table
 
 class GridOptimizer:
     """
