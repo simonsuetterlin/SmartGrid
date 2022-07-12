@@ -29,6 +29,9 @@ class GridOptimizer:
         self.cost_to_go_m = None
         self.opt_dec_m = None
 
+    def convert_index_to_value(self, index):
+        return tuple([self.model.state[i][ind] for i, ind in enumerate(index)])
+
     def calculate_cost_to_go_matrix_sequence(self, depth):
         """
         Calculates the cost to go matrix to the specified depth.
@@ -43,6 +46,11 @@ class GridOptimizer:
         """
         assert depth > 0 and isinstance(depth, int), "Depth must be non negative integer."
         if self.iter_depth < depth:
+            print(
+                f"Calculating the cost to go matrix and the optimal decision "
+                f"matrix to the total depth of {depth} from the depth "
+                f"{self.iter_depth}."
+            )
             # initialize matricies
             choice = np.zeros(self.model.dim, dtype=int)
             M = [np.zeros(self.model.dim, dtype=float), np.zeros(self.model.dim, dtype=float)]
@@ -53,7 +61,7 @@ class GridOptimizer:
                 if(i != 0):
                     M[i%2], choice = self.calculate_cost_to_go_matrix(M[(i-1)%2])
                 else:
-                    if self.iter_depth > 0:
+                    if self.cost_to_go_m:
                         M[0] = self.cost_to_go_m
                     else:
                         M[0] = self.calculate_cost_to_go_matrix_final_step()
@@ -89,7 +97,8 @@ class GridOptimizer:
         """
         # list comprehension to iterate over rows and columns
         # matr = np.array([[[self.cost_to_go((self.model.V[v_index], self.model.O[o_index], self.model.B[b_index]), cost_matrix) for b_index in range(self.model.dim_B)] for v_index in range(self.model.dim_V)] for o_index in range(self.model.dim_O)])
-        f = lambda index: self.cost_to_go(index, cost_matrix)
+        f = lambda index: self.cost_to_go(
+            self.convert_index_to_value(index), cost_matrix)
         matr = np.vectorize(f)(look_up_table(self.model.dim))
         # matr = np.array([self.cost_to_go([self.model.state[i][j] for i, j in enumerate(index)], cost_matrix) for index in look_up_table])
         # extract cost-to-go-matrix and decision-matrix

@@ -88,7 +88,8 @@ class Simulator:
         axs[1].set_ylabel('storage capacity')
         axs[1].legend()
         axs[1].grid(True)
-        # Loss paths and possible max/ min loss
+        # Loss paths and possible max/ min loss 
+        # -.5 und balkendiagram???s
         axs[2].step(t[1:], self.L_path, label="loss")
         axs[2].step(t[1:], min_loss, label="min loss")
         axs[2].step(t[1:], max_loss, label="max loss")
@@ -114,9 +115,19 @@ class Simulator:
         plt.show()
 
     def get_min_loss(self):
+        # Der Minimale loss bei maximaler Batterie ladung
+        # max_B_use = min(self.f_path[i][1], self.model.B_max_charge)
+        # L_b = self.model.P_b * max_B_use
+        # L_i = self.model.P_i * (self.f_path[i][1] - max_B_use)
+        # f = lambda x: self.model.P_i * x - (self.model.P_i - self.model.P_b) * min(x, self.model.B_max_charge)
+        # return [f(self.f_path[i][1]) for i in range(len(self.L_path))]
+        # Das ist eigentlich der intern gedeckte Loss.
         return [self.model.P_i * self.f_path[i][1] for i in range(len(self.L_path))]
     
     def get_max_loss(self):
+        # Loss ohne internes Kraftwerk, also ohne Steuerung.
+        # ACHTUNG:
+        # Realer loss kann über max loss sein, da Steuerung auch mal schlecht.
         return [self.model.P_e * self.f_path[i][1] for i in range(len(self.L_path))]
 
     def get_subtracted_loss(self, min_loss):

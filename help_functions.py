@@ -25,11 +25,4 @@ def battery_usage(x0, x1, max_charge):
     overflow = overflow_O(x0, x1)
     return min(x0[2] + overflow[0], max_charge, deficit)
 
-def L_i(x0, x1):
-    return produce_O(x0, x1) * P_i
 
-def L_b(x0, x1, max_charge):
-    return battery_usage(x0, x1, max_charge) * P_b
-
-def L_e(x0, x1, max_charge):
-    return (deficit_O(x0, x1) - battery_usage(x0, x1, max_charge)) * P_e

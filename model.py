@@ -29,11 +29,12 @@ class GridModel:
         self.dim_O = len(O)
         self.dim_V = len(V)
         self.dim_B = len(B)
+        self.B_max_charge = max(B)
         self.V_max_change = V_max_change
         self.dim = (self.dim_O, self.dim_V, self.dim_B)
         self.state = (self.O, self.V, self.B)
         self.distribution_name = distribution
-        self.set_distribution(distribution)
+        self.set_distribution()
     
     def __str__(self):
         return (
@@ -45,17 +46,17 @@ class GridModel:
             f"{'Distribution:':>15}\t{self.distribution_name}"
                    )
     
-    def set_distribution(self, distribution):
+    def set_distribution(self):
         """
         Set distribution of city consumption change. Eather uniform or binom
         """
-        if distribution == "uniform":
+        if self.distribution_name == "uniform":
             self.distribution = stats.randint(low=-self.V_max_change, high=self.V_max_change+1)
-        elif distribution == "binom":
+        elif self.distribution_name == "binom":
             # binomial distribution around 0 (quicker then own implementation)
             self.distribution = stats.binom(n = 2 * self.V_max_change, p = 0.5, loc = -self.V_max_change)
         else: 
-            raise ValueError("WRONG DISTRIBUTION NAME")
+            raise ValueError("This distribution is not yet implemented.")
 
     def L(self, x0, x1):
         """
@@ -89,7 +90,7 @@ class GridModel:
         v1 = min(max(self.V), max(x0[1] + v, min(self.V)))
         
         overflow = sum(overflow_O(x0, (o1, v1, 0)))
-        battery_used = battery_usage(x0, (o1, v1, 0))
+        battery_used = battery_usage(x0, (o1, v1, 0), self.B_max_charge)
         # calculates new battery charge:
         # current state + overflow of own power plant - drain of battery
         # but respecting that it can't be overcharged
