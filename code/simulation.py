@@ -50,7 +50,7 @@ class Simulator:
         if O_start is None:
             O_start = np.min(self.model.O)
         # random initialisation of the model
-        x0 = (O_start, V_start, B_start)
+        x0 = (O_start, [V_start i in range(self.model.num_sub_timepoints)], [B_start for i in range(self.model.num_sub_timepoints)])
         self.f_path.append(x0)
         # simulate the model for every step
         for i in range(T):

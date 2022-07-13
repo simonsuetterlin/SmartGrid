@@ -69,4 +69,11 @@ def convert_state_to_index(state, state_space):
         f"The length of given index {len(state)} does not match the dimension "
         f"of the state space {len(state_space)}."
     )
-    return tuple([np.where(state_space[i] == value)[0][0] for i, value in enumerate(state)])
+    index = np.array([], dtype=int)
+    for i, value in enumerate(state):
+        # if it is the random or battery array
+        if i == 1 or i == 2:
+            index = np.append(index, np.where(state_space[i] == value[0])[0][0])
+        else: 
+            index = np.append(index, np.where(state_space[i] == value)[0][0])
+    return index

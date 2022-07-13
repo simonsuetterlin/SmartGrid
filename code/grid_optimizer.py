@@ -2,7 +2,7 @@
 import numpy as np
 import casadi as ca
 import random
-from code.look_up_table import look_up_table
+from Code.look_up_table import look_up_table
 
 
 class GridOptimizer:
@@ -133,9 +133,9 @@ class GridOptimizer:
         """
         state0 = self.model.index_to_state(index)
         if state0[0] + u in self.model.O:
-            def rv_loss(v):
+            def rv_loss(v0):
                 """
-                Calculates loss based on next conumption.
+                Calculates expected value based on next conumption.
                 Used as a random variable, since change of consumption
                 is a random variable.
                 
@@ -144,10 +144,18 @@ class GridOptimizer:
                 Returns:
                     loss
                 """
-                state1 = self.model.f(state0, u, v)
+                state1 = self.model.f(state0, u, [v0 for i in range(self.model.num_sub_timepoints)])
                 index1 = self.model.state_to_index(state1)
-                return self.model.L(state0, state1) + cost_matrix[index1]
 
+                def sub_loss(v):
+                    return self.model.L(self.model.f(state0, u, [state1[2][0] + v for i in range(self.model.num_sub_timepoints)]))
+
+                E_L = self.model.sub_distribution.expect(np.vectorize(sub_loss))
+                B = cost_matrix[tuple(index1)]
+
+                return E_L + cost_matrix[tuple(index1)]
+
+            A = rv_loss(0)
             # calculate expected value of rv_loss based on given distribution
             return self.model.distribution.expect(np.vectorize(rv_loss))
         return np.inf
