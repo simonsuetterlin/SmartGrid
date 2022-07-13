@@ -29,9 +29,6 @@ class GridOptimizer:
         self.cost_to_go_m = None
         self.opt_dec_m = None
 
-    def convert_index_to_value(self, index):
-        return tuple([self.model.state[i][ind] for i, ind in enumerate(index)])
-
     def calculate_cost_to_go_matrix_sequence(self, depth):
         """
         Calculates the cost to go matrix to the specified depth.
@@ -57,7 +54,7 @@ class GridOptimizer:
             # iterately calculates the cost to go matrix from saved depth
             depth_to_go = depth - self.iter_depth + 1
             for i in range(depth_to_go):
-                print(f"{f'Reached depth {i} from {depth_to_go}:':<25}\t {100. * i / depth_to_go:5.1f}%" , end="\r")
+                print(f"{f'Reached depth {i} from {depth_to_go-1}:':<25}\t {100. * i / depth_to_go:5.1f}%" , end="\r")
                 if(i != 0):
                     M[i%2], choice = self.calculate_cost_to_go_matrix(M[(i-1)%2])
                 else:
@@ -81,7 +78,6 @@ class GridOptimizer:
         """
         # initialize matrix
         M = np.zeros(self.model.dim, dtype=float)
-        #M = np.array([[func for v_index in range(self.model.dim_V)] for o_index in range(self.model.dim_O)])
         return M
 
     def calculate_cost_to_go_matrix(self, cost_matrix):
@@ -95,50 +91,47 @@ class GridOptimizer:
         Returns:
             cost and decision matrix
         """
-        # list comprehension to iterate over rows and columns
-        # matr = np.array([[[self.cost_to_go((self.model.V[v_index], self.model.O[o_index], self.model.B[b_index]), cost_matrix) for b_index in range(self.model.dim_B)] for v_index in range(self.model.dim_V)] for o_index in range(self.model.dim_O)])
-        f = lambda index: self.cost_to_go(
-            self.convert_index_to_value(index), cost_matrix)
+        f = lambda index: self.cost_to_go(index, cost_matrix)
         matr = np.vectorize(f)(look_up_table(self.model.dim))
-        # matr = np.array([self.cost_to_go([self.model.state[i][j] for i, j in enumerate(index)], cost_matrix) for index in look_up_table])
         # extract cost-to-go-matrix and decision-matrix
         cost_to_go_matrix = matr[0]
         decision_matrix = matr[1].astype(int)
         return cost_to_go_matrix, decision_matrix
         
 
-    def cost_to_go(self, x0, cost_matrix):
+    def cost_to_go(self, index, cost_matrix):
         """
         Calculate minimal expected loss for a given state.
         
         Args:
-            x0: current state
+            index: multi-index representing current state
             cost_matrix: cost to go matrix ater the step
         
         Returns:
             min expected loss and corresponding control
         """
         # calculates the path cost for every possible control
-        step_cost_to_go_array = [self.calculate_path_cost(x0, u, cost_matrix) for u in self.model.U]
+        step_cost_to_go_array = [self.calculate_path_cost(index, u, cost_matrix) for u in self.model.U]
         # get index of minimum
         min_index = np.argmin(step_cost_to_go_array)
         # returns minimal costs and the control to the minimal cost
         return step_cost_to_go_array[min_index], self.model.U[min_index]
 
-    def calculate_path_cost(self, x0, u, cost_matrix):
+    def calculate_path_cost(self, index, u, cost_matrix):
         """
         Calculates the costs after one decision as expected value
         with random variable "next possible state".
         
         Args:
-            x0: current state
+            index: multi-index representing current state
             u: decision
             cost_matrix: cost to go matrix ater the step
             
         Returns:
             expected loss or np.inf, if state doesn't allow control u
         """
-        if x0[0] + u in self.model.O:
+        state0 = self.model.index_to_state(index)
+        if state0[0] + u in self.model.O:
             def rv_loss(v):
                 """
                 Calculates loss based on next conumption.
@@ -150,8 +143,9 @@ class GridOptimizer:
                 Returns:
                     loss
                 """
-                x1 = self.model.f(x0, u, v)
-                return self.model.L(x0, x1) + cost_matrix[x1]
+                state1 = self.model.f(state0, u, v)
+                index1 = self.model.state_to_index(state1)
+                return self.model.L(state0, state1) + cost_matrix[index1]
             # calculate expected value of rv_loss based on given distribution
             return self.model.distribution.expect(np.vectorize(rv_loss))
         return np.inf

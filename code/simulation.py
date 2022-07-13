@@ -25,7 +25,7 @@ class Simulator:
         self.L_path = []
         self.battery_path = []
 
-    def simulate(self, T, O_start=0, V_start=None, B_start=0, V_realisation=None):
+    def simulate(self, T, O_start=None, V_start=None, B_start=0, V_realisation=None):
         """
         Simulates the model for T steps 
         
@@ -41,18 +41,21 @@ class Simulator:
         self.L_path = []
         self.battery_path = [B_start]
         # if no realisation of V is given it gets calculated randomly
-        if V_realisation == None:
+        if V_realisation is None:
             V_realisation = self.model.distribution.rvs(size=T)
         # if no initial value is set it get initialized randomly
-        if V_start == None:
+        if V_start is None:
             V_start = random.randint(min(self.model.V), max(self.model.V))
-        # random initialisation of the model    
+        if O_start is None:
+            O_start = np.min(self.model.O)
+        # random initialisation of the model
         x0 = (O_start, V_start, B_start)
         self.f_path.append(x0)
         # simulate the model for every step
         for i in range(T):
             # get optimal step from matrix
-            u = self.optimal_step_matrix[x0]
+            index = self.model.state_to_index(x0)
+            u = self.optimal_step_matrix[index]
             v = V_realisation[i]
             x1 = self.model.f(x0, u, v)
             # save parameters

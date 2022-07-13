@@ -1,6 +1,7 @@
 from scipy import stats
 import numpy as np
 from code.help_functions import battery_usage, overflow_O
+from code.look_up_table import convert_index_to_state, convert_state_to_index
 
 class GridModel: 
     """
@@ -32,7 +33,7 @@ class GridModel:
         self.B_max_charge = max(B)
         self.V_max_change = V_max_change
         self.dim = (self.dim_O, self.dim_V, self.dim_B)
-        self.state = (self.O, self.V, self.B)
+        self.state_space = (self.O, self.V, self.B)
         self.distribution_name = distribution
         self.set_distribution()
     
@@ -99,3 +100,11 @@ class GridModel:
         b1 = int(min(x0[2] + overflow - battery_used, max(self.B)))
         
         return (o1, v1, b1)
+    
+    def index_to_state(self, index):
+        return convert_index_to_state(index, self.state_space)
+    
+    def state_to_index(self, state):
+        return convert_state_to_index(state, self.state_space)
+
+    
