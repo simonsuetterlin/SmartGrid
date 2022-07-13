@@ -3,7 +3,8 @@ import numpy as np
 from code.help_functions import battery_usage, overflow_O
 from code.look_up_table import convert_index_to_state, convert_state_to_index
 
-class GridModel: 
+
+class GridModel:
     """
     The class Model collects all informations about a certain grid-model
     and ist used as input for the class GridOptimizer.
@@ -18,6 +19,7 @@ class GridModel:
         L: calculates loss function of the whole model
         f: calculates the next state of the model
     """
+
     def __init__(self, L_list, P_i, P_e, P_b, U, O, V, B, V_max_change, distribution):
         self.L_list = L_list
         self.P_i = P_i
@@ -36,7 +38,7 @@ class GridModel:
         self.state_space = (self.O, self.V, self.B)
         self.distribution_name = distribution
         self.set_distribution()
-    
+
     def __str__(self):
         return (
             f"This grid model has following dimensions and assumptions:\n"
@@ -45,18 +47,18 @@ class GridModel:
             f"{'Output:':>15}\t({np.min(self.O)}, {np.max(self.O)}, {self.dim_O})\n"
             f"{'Battery:':>15}\t({np.min(self.B)}, {np.max(self.B)}, {self.dim_B})\n"
             f"{'Distribution:':>15}\t{self.distribution_name}"
-                   )
-    
+        )
+
     def set_distribution(self):
         """
         Set distribution of city consumption change. Eather uniform or binom
         """
         if self.distribution_name == "uniform":
-            self.distribution = stats.randint(low=-self.V_max_change, high=self.V_max_change+1)
+            self.distribution = stats.randint(low=-self.V_max_change, high=self.V_max_change + 1)
         elif self.distribution_name == "binom":
             # binomial distribution around 0 (quicker then own implementation)
-            self.distribution = stats.binom(n = 2 * self.V_max_change, p = 0.5, loc = -self.V_max_change)
-        else: 
+            self.distribution = stats.binom(n=2 * self.V_max_change, p=0.5, loc=-self.V_max_change)
+        else:
             raise ValueError("This distribution is not yet implemented.")
 
     def L(self, x0, x1):
@@ -69,9 +71,9 @@ class GridModel:
             x1: next state
         """
         L_eval = np.array([l(x0, x1) for l in self.L_list])
-        assert np.all(L_eval >= 0), "LOSS NEGATIVE, {}".format( L_eval)
+        assert np.all(L_eval >= 0), "LOSS NEGATIVE, {}".format(L_eval)
         return L_eval.sum()
-    
+
     def f(self, x0, u, v):
         """
         Calculates next state based on current state, decision and new consum.
@@ -86,10 +88,9 @@ class GridModel:
         if o1 not in self.O:
             raise ValueError('Value of the output is out of bounds by current control.')
 
-
-        # prohibits getting out of bounds, based on 
+        # prohibits getting out of bounds, based on
         v1 = min(max(self.V), max(x0[1] + v, min(self.V)))
-        
+
         overflow = sum(overflow_O(x0, (o1, v1, 0)))
         battery_used = battery_usage(x0, (o1, v1, 0), self.B_max_charge)
         # calculates new battery charge:
@@ -98,13 +99,11 @@ class GridModel:
         # for simplicity b1 is kept as integer. Since there is loss
         # when charging we always round to the smaller integer.
         b1 = int(min(x0[2] + overflow - battery_used, max(self.B)))
-        
+
         return (o1, v1, b1)
-    
+
     def index_to_state(self, index):
         return convert_index_to_state(index, self.state_space)
-    
+
     def state_to_index(self, state):
         return convert_state_to_index(state, self.state_space)
-
-    

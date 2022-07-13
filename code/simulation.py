@@ -18,6 +18,7 @@ class Simulator:
         simulate: simulates the model for T steps
         plot: plots the results
     """
+
     def __init__(self, model, optimal_step_matrix):
         self.model = model
         self.optimal_step_matrix = optimal_step_matrix
@@ -64,30 +65,30 @@ class Simulator:
             self.battery_path.append(x1[2])
             x0 = x1
         # TODO
-        #self.battery_output = [0]
-        #print([np.max(0, self.battery_path[i] - self.battery_path[i+1]) for i in range(len(self.battery_path)-1)])
-        #self.battery_output.extend([np.max(0, self.battery_path[i] - self.battery_path[i+1]) for i in range(len(self.battery_path)-1)])
-            
+        # self.battery_output = [0]
+        # print([np.max(0, self.battery_path[i] - self.battery_path[i+1]) for i in range(len(self.battery_path)-1)])
+        # self.battery_output.extend([np.max(0, self.battery_path[i] - self.battery_path[i+1]) for i in range(len(self.battery_path)-1)])
+
     def plot_path(self):
         """
         Plot the simulation results
         """
         min_loss = self.get_min_loss()
         max_loss = self.get_max_loss()
-        
+
         print(self.model)
 
-        fig, axs = plt.subplots(5, 1, dpi=100, figsize=(20,9))
+        fig, axs = plt.subplots(5, 1, dpi=100, figsize=(20, 9))
         t = np.arange(len(self.L_path) + 1)
         # Path of O and V
         axs[0].plot(t, [i[0] for i in self.f_path], label="O")
         axs[0].step(t, [i[1] for i in self.f_path], label="V")
-        #axs[0].step(t, self.battery_output, label="B")
+        # axs[0].step(t, self.battery_output, label="B")
         axs[0].set_ylabel('O and V path')
         axs[0].legend()
         axs[0].grid(True)
         # battery state
-        axs[1].step(t,self.battery_path, label="battery charge")
+        axs[1].step(t, self.battery_path, label="battery charge")
         axs[1].set_ylabel('storage capacity')
         axs[1].legend()
         axs[1].grid(True)
@@ -100,7 +101,7 @@ class Simulator:
         axs[2].legend()
         axs[2].grid(True)
         # loss subtracted by minimal loss
-        axs[3].hlines(0, xmin=0, xmax=len(t)-1, label="min loss", color='black')
+        axs[3].hlines(0, xmin=0, xmax=len(t) - 1, label="min loss", color='black')
         axs[3].step(t[1:], [self.L_path[i] - min_loss[i] for i in range(len(self.L_path))], label="subtracted loss")
         axs[3].step(t[1:], [max_loss[i] - min_loss[i] for i in range(len(self.L_path))], label="subtracted max loss")
         axs[3].set_ylabel('Loss')
@@ -108,9 +109,11 @@ class Simulator:
         axs[3].legend()
         axs[3].grid(True)
         # cumulated losss substr.
-        axs[4].hlines(0, xmin=0, xmax=len(t)-1, label="min loss", color='black')
-        axs[4].step(t[1:], np.cumsum([self.L_path[i] - min_loss[i] for i in range(len(self.L_path))]), label="cum subtracted loss")
-        axs[4].step(t[1:], np.cumsum([max_loss[i] - min_loss[i] for i in range(len(self.L_path))]), label="cum subtracted max loss")
+        axs[4].hlines(0, xmin=0, xmax=len(t) - 1, label="min loss", color='black')
+        axs[4].step(t[1:], np.cumsum([self.L_path[i] - min_loss[i] for i in range(len(self.L_path))]),
+                    label="cum subtracted loss")
+        axs[4].step(t[1:], np.cumsum([max_loss[i] - min_loss[i] for i in range(len(self.L_path))]),
+                    label="cum subtracted max loss")
         axs[4].set_ylabel('Loss')
         axs[4].set_xlabel('time')
         axs[4].legend()
@@ -126,7 +129,7 @@ class Simulator:
         # return [f(self.f_path[i][1]) for i in range(len(self.L_path))]
         # Das ist eigentlich der intern gedeckte Loss.
         return [self.model.P_i * self.f_path[i][1] for i in range(len(self.L_path))]
-    
+
     def get_max_loss(self):
         # Loss ohne internes Kraftwerk, also ohne Steuerung.
         # ACHTUNG:

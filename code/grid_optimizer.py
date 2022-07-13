@@ -1,8 +1,9 @@
-#from rk4step import rk4step
+# from rk4step import rk4step
 import numpy as np
 import casadi as ca
 import random
 from code.look_up_table import look_up_table
+
 
 class GridOptimizer:
     """
@@ -23,6 +24,7 @@ class GridOptimizer:
             evaluates the cost-to-go-function to certain depth
             and saves it to cost_to_go_m        
     """
+
     def __init__(self, model):
         self.model = model
         self.iter_depth = 0
@@ -54,17 +56,17 @@ class GridOptimizer:
             # iterately calculates the cost to go matrix from saved depth
             depth_to_go = depth - self.iter_depth + 1
             for i in range(depth_to_go):
-                print(f"{f'Reached depth {i} from {depth_to_go-1}:':<25}\t {100. * i / depth_to_go:5.1f}%" , end="\r")
-                if(i != 0):
-                    M[i%2], choice = self.calculate_cost_to_go_matrix(M[(i-1)%2])
+                print(f"{f'Reached depth {i} from {depth_to_go - 1}:':<25}\t {100. * i / depth_to_go:5.1f}%", end="\r")
+                if (i != 0):
+                    M[i % 2], choice = self.calculate_cost_to_go_matrix(M[(i - 1) % 2])
                 else:
                     if self.cost_to_go_m:
                         M[0] = self.cost_to_go_m
                     else:
                         M[0] = self.calculate_cost_to_go_matrix_final_step()
             # set calculated attributes
-            print(f"{'Finished:':<25}\t {100. * depth_to_go/depth_to_go:.1f}%")
-            self.cost_to_go_m =  M[(depth - self.iter_depth)%2]
+            print(f"{'Finished:':<25}\t {100. * depth_to_go / depth_to_go:.1f}%")
+            self.cost_to_go_m = M[(depth - self.iter_depth) % 2]
             self.iter_depth = depth
             self.opt_dec_m = choice
 
@@ -97,7 +99,6 @@ class GridOptimizer:
         cost_to_go_matrix = matr[0]
         decision_matrix = matr[1].astype(int)
         return cost_to_go_matrix, decision_matrix
-        
 
     def cost_to_go(self, index, cost_matrix):
         """
@@ -146,8 +147,7 @@ class GridOptimizer:
                 state1 = self.model.f(state0, u, v)
                 index1 = self.model.state_to_index(state1)
                 return self.model.L(state0, state1) + cost_matrix[index1]
+
             # calculate expected value of rv_loss based on given distribution
             return self.model.distribution.expect(np.vectorize(rv_loss))
         return np.inf
-
-  

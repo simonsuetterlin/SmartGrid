@@ -13,12 +13,13 @@ from main import *
 P_e = 20
 P_i = 10
 P_b = 5
-U = [-2, -1,0,1,2]
+U = [-2, -1, 0, 1, 2]
 O = list(range(11))
 V = list(range(11))
 B = list(range(11))
 V_max_change = 4
 B_max_charge = max(B)
+
 
 class TestSimulation(unittest.TestCase):
     pass
@@ -27,28 +28,30 @@ class TestSimulation(unittest.TestCase):
 class TestOptimizer(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        self.model = GridModel(L_list=[L_i, L_e, L_b], P_i=P_i, P_e=P_e, P_b=P_b, U=U, O=O, V=V, B=B, V_max_change=V_max_change, distribution="binom")
+        self.model = GridModel(L_list=[L_i, L_e, L_b], P_i=P_i, P_e=P_e, P_b=P_b, U=U, O=O, V=V, B=B,
+                               V_max_change=V_max_change, distribution="binom")
         self.optimizer = GridOptimizer(model=self.model)
-        self.optimizer.calculate_cost_to_go_matrix_sequence(depth = 2)
-    
-    
-    
+        self.optimizer.calculate_cost_to_go_matrix_sequence(depth=2)
+
 
 class TestGridModel(unittest.TestCase):
     """
     Checks returns of all f and L function for given states.
     Checks that distribution is correctly set
     """
+
     @classmethod
     def setUpClass(self):
         L_i = lambda x, y: x[0] * y[0]
         L_b = lambda x, y: x[1] * y[1]
         L_e = lambda x, y: x[2] * y[2]
-        self.model1 = GridModel(L_list=[L_i, L_e, L_b], P_i=P_i, P_e=P_e, P_b=P_b, U=U, O=O, V=V, B=B, V_max_change=V_max_change, distribution="binom")
+        self.model1 = GridModel(L_list=[L_i, L_e, L_b], P_i=P_i, P_e=P_e, P_b=P_b, U=U, O=O, V=V, B=B,
+                                V_max_change=V_max_change, distribution="binom")
         L_i = lambda x, y: x[0]
         L_b = lambda x, y: x[1]
         L_e = lambda x, y: x[2]
-        self.model2 = GridModel(L_list=[L_i, L_e, L_b], P_i=P_i, P_e=P_e, P_b=P_b, U=U, O=O, V=V, B=B, V_max_change=V_max_change, distribution="uniform")
+        self.model2 = GridModel(L_list=[L_i, L_e, L_b], P_i=P_i, P_e=P_e, P_b=P_b, U=U, O=O, V=V, B=B,
+                                V_max_change=V_max_change, distribution="uniform")
         self.state = [
             (1, 2, 3),
             (3, 2, 5),
@@ -60,10 +63,10 @@ class TestGridModel(unittest.TestCase):
             (0, 40, 0)
         ]
         self.len = len(self.state)
-            
+
     def get_x(self, i, j):
-        assert i < self.len and j < self.len,\
-        "Index must be smaller than list length."
+        assert i < self.len and j < self.len, \
+            "Index must be smaller than list length."
         return self.state[i], self.state[j]
 
     def test_set_distribution(self):
@@ -75,7 +78,7 @@ class TestGridModel(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.model1.distribution_name = "nothing"
             self.model1.set_distribution()
-        
+
     def test_L(self):
         x0, x1 = self.get_x(0, 1)
         self.assertEqual(self.model1.L(x0, x1), 22)
@@ -120,6 +123,7 @@ class TestHelpFunctions(unittest.TestCase):
     """
     Checks returns of all help functions for given states.
     """
+
     @classmethod
     def setUpClass(self):
         # sets some possible states.
@@ -135,19 +139,19 @@ class TestHelpFunctions(unittest.TestCase):
         ]
         self.len = len(self.state)
         self.max_charge = B_max_charge
-    
+
     def get_x(self, i, j):
-        assert i < self.len and j < self.len,\
-        "Index must be smaller than list length."
+        assert i < self.len and j < self.len, \
+            "Index must be smaller than list length."
         return self.state[i], self.state[j]
-    
+
     def test_produce_O(self):
         x0, x1 = self.get_x(0, 1)
         self.assertEqual(produce_O(x0, x1), 2)
         x0, x1 = self.get_x(1, 2)
         self.assertEqual(produce_O(x0, x1), 1.5)
         x0, x1 = self.get_x(2, 3)
-        self.assertEqual(produce_O(x0, x1), 6)        
+        self.assertEqual(produce_O(x0, x1), 6)
         x0, x1 = self.get_x(3, 4)
         self.assertEqual(produce_O(x0, x1), 9)
         x0, x1 = self.get_x(4, 5)
@@ -156,34 +160,34 @@ class TestHelpFunctions(unittest.TestCase):
         self.assertEqual(produce_O(x0, x1), 25)
         for i in range(100):
             for j in range(100):
-                x0, x1 = (i,0,0), (j,0,0)
-                self.assertGreaterEqual(produce_O(x0,x1), 0)
-                
+                x0, x1 = (i, 0, 0), (j, 0, 0)
+                self.assertGreaterEqual(produce_O(x0, x1), 0)
+
     def test_overflow_O(self):
         x0, x1 = self.get_x(0, 1)
         self.assertListEqual(overflow_O(x0, x1), [0, .25])
         x0, x1 = self.get_x(1, 2)
         self.assertListEqual(overflow_O(x0, x1), [1.5, 0])
         x0, x1 = self.get_x(2, 3)
-        np.testing.assert_array_almost_equal(overflow_O(x0, x1), [0, 25./24])
+        np.testing.assert_array_almost_equal(overflow_O(x0, x1), [0, 25. / 24])
         x0, x1 = self.get_x(3, 4)
         self.assertListEqual(overflow_O(x0, x1), [0, 6])
         x0, x1 = self.get_x(4, 5)
-        self.assertListEqual(overflow_O(x0, x1), [1./6, 0])
+        self.assertListEqual(overflow_O(x0, x1), [1. / 6, 0])
         x0, x1 = self.get_x(6, 7)
         self.assertListEqual(overflow_O(x0, x1), [1., 0])
-        
+
     def test_deficit_O(self):
         x0, x1 = self.get_x(0, 1)
         self.assertEqual(deficit_O(x0, x1), .25)
         x0, x1 = self.get_x(1, 2)
         self.assertEqual(deficit_O(x0, x1), 0.)
         x0, x1 = self.get_x(2, 3)
-        self.assertAlmostEqual(deficit_O(x0, x1), 49./24)
+        self.assertAlmostEqual(deficit_O(x0, x1), 49. / 24)
         x0, x1 = self.get_x(3, 4)
         self.assertEqual(deficit_O(x0, x1), 0.)
         x0, x1 = self.get_x(4, 5)
-        self.assertAlmostEqual(deficit_O(x0, x1), 2./3)
+        self.assertAlmostEqual(deficit_O(x0, x1), 2. / 3)
         x0, x1 = self.get_x(6, 7)
         self.assertAlmostEqual(deficit_O(x0, x1), 16)
 
@@ -197,7 +201,7 @@ class TestHelpFunctions(unittest.TestCase):
         x0, x1 = self.get_x(3, 4)
         self.assertEqual(battery_usage(x0, x1, self.max_charge), 0.)
         x0, x1 = self.get_x(4, 5)
-        self.assertAlmostEqual(battery_usage(x0, x1, self.max_charge), 1./6)
+        self.assertAlmostEqual(battery_usage(x0, x1, self.max_charge), 1. / 6)
         x0, x1 = self.get_x(6, 7)
         self.assertEqual(battery_usage(x0, x1, self.max_charge), 10)
 
@@ -207,9 +211,9 @@ class TestLookUpTable(unittest.TestCase):
     def setUpClass(self):
         # sets some examples
         self.state_space = [np.arange(4, 6), np.arange(5, 10), np.arange(1, 7)]
-        self.dim0 = (1,1)
-        self.dim1 = (1,2)
-        self.dim2 = (1,1,1)
+        self.dim0 = (1, 1)
+        self.dim1 = (1, 2)
+        self.dim2 = (1, 1, 1)
         self.dim3 = (2, 5, 6)
         self.dim4 = (3, 3, 4, 2)
         self.m0 = look_up_table(self.dim0)
@@ -217,7 +221,7 @@ class TestLookUpTable(unittest.TestCase):
         self.m2 = look_up_table(self.dim2)
         self.m3 = look_up_table(self.dim3)
         self.m4 = look_up_table(self.dim4)
-    
+
     def test_type(self):
         # checks for right types
         # m0
@@ -240,7 +244,7 @@ class TestLookUpTable(unittest.TestCase):
         self.assertIsInstance(self.m4, np.ndarray)
         self.assertEqual(self.m4.dtype, tuple)
         self.assertIsInstance(self.m4[2, 1, 2, 0][2], np.int8)
-        
+
     def test_dimensions(self):
         # checks for right dimension
         # m0
@@ -258,15 +262,15 @@ class TestLookUpTable(unittest.TestCase):
         # checks the entrees of the returns
         # m0
         m = np.empty(self.dim0, dtype=tuple)
-        m[:] = [[(0,0)]]
+        m[:] = [[(0, 0)]]
         np.testing.assert_array_equal(self.m0, m)
         # m1
         m = np.empty(self.dim1, dtype=tuple)
-        m[:] = [[(0,0), (0,1)]]
+        m[:] = [[(0, 0), (0, 1)]]
         np.testing.assert_array_equal(self.m1, m)
         # m2
         m = np.empty(self.dim2, dtype=tuple)
-        m[:] = [[[(0,0,0)]]]
+        m[:] = [[[(0, 0, 0)]]]
         np.testing.assert_array_equal(self.m2, m)
         # m3
         for i in range(self.dim3[0]):
@@ -280,7 +284,7 @@ class TestLookUpTable(unittest.TestCase):
                     for l in range(self.dim4[3]):
                         self.assertTupleEqual(
                             self.m4[(i, j, k, l)], (i, j, k, l))
-    
+
     def test_convert_index_to_state(self):
         # checks type and output for some examples
         state = convert_index_to_state((1, 1, 1), self.state_space)
