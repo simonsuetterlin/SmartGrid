@@ -18,7 +18,7 @@ V_max_change = 10
 class Model: 
     """
     The class Model collects all informations about a certain grid-model
-    and ist used as input for the class GridOptimizer.
+    and is used as input for the class GridOptimizer.
     
     Args:
         L_i, L_e: loss functions
