@@ -1,6 +1,7 @@
 import random
 import numpy as np
 import matplotlib.pyplot as plt
+from itertools import chain
 
 
 # TODO Compare models 
@@ -43,25 +44,26 @@ class Simulator:
         self.battery_path = [B_start]
         # if no realisation of V is given it gets calculated randomly
         if V_realisation is None:
-            V_realisation = self.model.distribution.rvs(size=T)
+            V_realisation = self.model.distribution.rvs(size=T+1)
+            V_sub_realisation = [self.model.sub_distribution.rvs(size=10) for i in range(T+1)]
         # if no initial value is set it get initialized randomly
         if V_start is None:
             V_start = random.randint(min(self.model.V), max(self.model.V))
         if O_start is None:
             O_start = np.min(self.model.O)
         # random initialisation of the model
-        x0 = (O_start, [V_start i in range(self.model.num_sub_timepoints)], [B_start for i in range(self.model.num_sub_timepoints)])
+        x0 = (O_start, V_realisation[0] + [0 for i in range(self.model.num_sub_timepoints)], [B_start for i in range(self.model.num_sub_timepoints)])
         self.f_path.append(x0)
         # simulate the model for every step
         for i in range(T):
             # get optimal step from matrix
-            index = self.model.state_to_index(x0)
-            u = self.optimal_step_matrix[index]
-            v = V_realisation[i]
-            x1 = self.model.f(x0, u, v)
+            index = self.model.state_to_index([x0[0], x0[1], x0[2]])
+            u = self.optimal_step_matrix[tuple(index)]
+            v = [V_realisation[i+1]] + V_sub_realisation[i+1]
+            x1 = self.model.f([x0[0], x0[1][-1], x0[2][-1]], u, v)
             # save parameters
-            self.f_path.append(self.model.f(x0, u, v))
-            self.L_path.append(self.model.L(x0, x1))
+            self.f_path.append(self.model.f([x0[0], x0[1][-1], x0[2][-1]], u, v))
+            self.L_path.append(self.model.L(x1))
             self.battery_path.append(x1[2])
             x0 = x1
         # TODO
@@ -77,47 +79,24 @@ class Simulator:
         max_loss = self.get_max_loss()
 
         print(self.model)
-
-        fig, axs = plt.subplots(5, 1, dpi=100, figsize=(20, 9))
-        t = np.arange(len(self.L_path) + 1)
+        # item for sublist in list_of_lists for item in sublist
+        fig, axs = plt.subplots(2, 1, dpi=100, figsize=(20, 9))
+        V = list(chain(*[i[1] for i in self.f_path[1:]])) #[item for a in (i[1] for i in self.f_path) for item in a]
+        B = list(chain(*self.battery_path[1:])) #[item for b in (i for i in self.battery_path) for item in b]
+        t = range(len([i[0] for i in self.f_path]))
+        T = range(len(V))
         # Path of O and V
         axs[0].plot(t, [i[0] for i in self.f_path], label="O")
-        axs[0].step(t, [i[1] for i in self.f_path], label="V")
+        axs[0].step(T, V, label="V")
         # axs[0].step(t, self.battery_output, label="B")
         axs[0].set_ylabel('O and V path')
         axs[0].legend()
         axs[0].grid(True)
         # battery state
-        axs[1].step(t, self.battery_path, label="battery charge")
+        axs[1].step(range(len(B)), B, label="battery charge")
         axs[1].set_ylabel('storage capacity')
         axs[1].legend()
         axs[1].grid(True)
-        # Loss paths and possible max/ min loss 
-        # -.5 und balkendiagram???s
-        axs[2].step(t[1:], self.L_path, label="loss")
-        axs[2].step(t[1:], min_loss, label="min loss")
-        axs[2].step(t[1:], max_loss, label="max loss")
-        axs[2].set_ylabel('Loss')
-        axs[2].legend()
-        axs[2].grid(True)
-        # loss subtracted by minimal loss
-        axs[3].hlines(0, xmin=0, xmax=len(t) - 1, label="min loss", color='black')
-        axs[3].step(t[1:], [self.L_path[i] - min_loss[i] for i in range(len(self.L_path))], label="subtracted loss")
-        axs[3].step(t[1:], [max_loss[i] - min_loss[i] for i in range(len(self.L_path))], label="subtracted max loss")
-        axs[3].set_ylabel('Loss')
-        axs[3].set_xlabel('time')
-        axs[3].legend()
-        axs[3].grid(True)
-        # cumulated losss substr.
-        axs[4].hlines(0, xmin=0, xmax=len(t) - 1, label="min loss", color='black')
-        axs[4].step(t[1:], np.cumsum([self.L_path[i] - min_loss[i] for i in range(len(self.L_path))]),
-                    label="cum subtracted loss")
-        axs[4].step(t[1:], np.cumsum([max_loss[i] - min_loss[i] for i in range(len(self.L_path))]),
-                    label="cum subtracted max loss")
-        axs[4].set_ylabel('Loss')
-        axs[4].set_xlabel('time')
-        axs[4].legend()
-        axs[4].grid(True)
         plt.show()
 
     def get_min_loss(self):

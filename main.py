@@ -15,11 +15,11 @@ P_b = 5
 U = [-2, -1, 0, 1, 2]
 O = np.arange(0, 10)
 V = np.arange(0, 10)#, step=2)
-B = np.arange(6)
+B = np.arange(4)
 V_max_change = 4
 B_max_charge = max(B)
 num_sub_timepoints = 10
-sub_max_change = 2
+sub_max_change = 1
 
 
 def L_i(x1):
@@ -46,6 +46,6 @@ if __name__ == '__main__':
     print(grid_opt.cost_to_go_m)
 
     # simulate model
-    #s = Simulator(model, grid_opt.opt_dec_m)
-    #s.simulate(T=100)
-    #s.plot_path()
+    s = Simulator(model, grid_opt.opt_dec_m)
+    s.simulate(T=100)
+    s.plot_path()
