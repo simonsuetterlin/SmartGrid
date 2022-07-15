@@ -12,16 +12,24 @@ from code.help_functions import *
 P_e = 20
 P_i = 10
 P_b = 5
-U = [-2, -1, 0, 1, 2]
-O = np.arange(10, 21)
-V = np.arange(10, 21)
+U = [-20,-2, -1, 0, 1, 2]#-20 stands for instant shutdown
+O = np.arange(0, 21)
+V = np.arange(0, 10)
 B = np.arange(6)
 V_max_change = 4
 B_max_charge = max(B)
 
-
+#factors are efficiency loss at lower output levels
 def L_i(x0, x1):
-    return produce_O(x0, x1) * P_i
+    prod_O=produce_O(x0,x1)
+    if 15 < prod_O <= 20:
+        return prod_O * P_i
+    elif 10 < prod_O <= 15:
+        return prod_O * P_i * 1.25
+    elif 5 < prod_O <= 10:
+        return prod_O * P_i * 1.5
+    else:
+        return prod_O * P_i * 1.75
 
 
 def L_b(x0, x1):

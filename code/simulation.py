@@ -26,7 +26,7 @@ class Simulator:
         self.L_path = []
         self.battery_path = []
 
-    def simulate(self, T, O_start=None, V_start=None, B_start=0, V_realisation=None):
+    def simulate(self, T, O_start=15, V_start=None, B_start=0, V_realisation=None):
         """
         Simulates the model for T steps 
         
