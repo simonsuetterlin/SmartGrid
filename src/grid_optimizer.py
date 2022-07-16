@@ -1,8 +1,6 @@
 # from rk4step import rk4step
 import numpy as np
-import casadi as ca
-import random
-from code.look_up_table import look_up_table
+from src.look_up_table import look_up_table
 
 
 class GridOptimizer:
@@ -115,8 +113,8 @@ class GridOptimizer:
         step_cost_to_go_array = [self.calculate_path_cost(index, u, cost_matrix) for u in self.model.U]
         # get index of minimum
         min_index = np.argmin(step_cost_to_go_array)
-        # returns minimal costs and the control to the minimal cost
-        return step_cost_to_go_array[min_index], self.model.U[min_index]
+        # returns minimal costs and the control to the minimal cost. Get new u function so that infinity will not be in optimal cost matrix
+        return step_cost_to_go_array[min_index], self.model.get_new_u(self.model.O[index[0]], self.model.U[min_index])
 
     def calculate_path_cost(self, index, u, cost_matrix):
         """
@@ -132,6 +130,9 @@ class GridOptimizer:
             expected loss or np.inf, if state doesn't allow control u
         """
         state0 = self.model.index_to_state(index)
+        # instart start to 80 % and instant shutdown to 0
+        u = self.model.get_new_u(state0[0], u)
+
         if state0[0] + u in self.model.O:
             def rv_loss(v):
                 """

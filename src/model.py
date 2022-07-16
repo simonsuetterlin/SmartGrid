@@ -1,7 +1,7 @@
 from scipy import stats
 import numpy as np
-from code.help_functions import battery_usage, overflow_O
-from code.look_up_table import convert_index_to_state, convert_state_to_index
+from src.help_functions import battery_usage, overflow_O
+from src.look_up_table import convert_index_to_state, convert_state_to_index
 
 
 class GridModel:
@@ -83,6 +83,9 @@ class GridModel:
             u: decision (change in output)
             v: change in consum
         """
+
+        u = self.get_new_u(x0[0], u)
+    
         o1 = x0[0] + u
         # prohibits stearing out of bounds!
         if o1 not in self.O:
@@ -101,6 +104,16 @@ class GridModel:
         b1 = int(min(x0[2] + overflow - battery_used, max(self.B)))
 
         return (o1, v1, b1)
+
+    def get_new_u(self, o0, u):
+        """
+        u adapted for instant start to 80% and instant shutdown to 0
+        """
+        if u == -np.inf:
+            u = -o0
+        elif u == np.inf and o0 == 0:
+            u = int(0.8 * len(self.O))
+        return u
 
     def index_to_state(self, index):
         return convert_index_to_state(index, self.state_space)
