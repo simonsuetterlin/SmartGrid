@@ -20,7 +20,7 @@ class GridModel:
         f: calculates the next state of the model
     """
 
-    def __init__(self, L_list, P_i, P_e, P_b, U, O, V, B, V_max_change, distribution):
+    def __init__(self, L_list, P_i, P_e, P_b, U, O, V, B, V_max_change, chain):
         self.L_list = L_list
         self.P_i = P_i
         self.P_e = P_e
@@ -36,7 +36,7 @@ class GridModel:
         self.V_max_change = V_max_change
         self.dim = (self.dim_O, self.dim_V, self.dim_B)
         self.state_space = (self.O, self.V, self.B)
-        self.distribution_name = distribution
+        self.chain = chain
         self.set_distribution()
 
     def __str__(self):
@@ -46,20 +46,16 @@ class GridModel:
             f"{'Consum:':>15}\t({np.min(self.V)}, {np.max(self.V)}, {self.dim_V})\n"
             f"{'Output:':>15}\t({np.min(self.O)}, {np.max(self.O)}, {self.dim_O})\n"
             f"{'Battery:':>15}\t({np.min(self.B)}, {np.max(self.B)}, {self.dim_B})\n"
-            f"{'Distribution:':>15}\t{self.distribution_name}"
         )
 
     def set_distribution(self):
         """
         Set distribution of city consumption change. Eather uniform or binom
         """
-        if self.distribution_name == "uniform":
-            self.distribution = stats.randint(low=-self.V_max_change, high=self.V_max_change + 1)
-        elif self.distribution_name == "binom":
-            # binomial distribution around 0 (quicker then own implementation)
-            self.distribution = stats.binom(n=2 * self.V_max_change, p=0.5, loc=-self.V_max_change)
-        else:
-            raise ValueError("This distribution is not yet implemented.")
+        self.distribution = []
+        for i in range(self.dim_V):
+            values = (self.V, self.chain.observed_p_matrix[i])
+            self.distribution.append(stats.rv_discrete(values=values))
 
     def L(self, x0, x1):
         """
@@ -92,7 +88,9 @@ class GridModel:
             raise ValueError('Value of the output is out of bounds by current control.')
 
         # prohibits getting out of bounds, based on
-        v1 = min(max(self.V), max(x0[1] + v, min(self.V)))
+        assert min(self.V) <= v <= max(self.V)
+        v1 = v
+        #v1 = min(max(self.V), max(x0[1] + v, min(self.V)))
 
         overflow = sum(overflow_O(x0, (o1, v1, 0)))
         battery_used = battery_usage(x0, (o1, v1, 0), self.B_max_charge)
@@ -112,7 +110,7 @@ class GridModel:
         if u == -np.inf:
             u = -o0
         elif u == np.inf and o0 == 0:
-            u = int(0.8 * len(self.O))
+            u = int(0.8 * np.max(self.O))
         return u
 
     def index_to_state(self, index):

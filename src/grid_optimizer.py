@@ -150,5 +150,5 @@ class GridOptimizer:
                 return self.model.L(state0, state1) + cost_matrix[index1]
 
             # calculate expected value of rv_loss based on given distribution
-            return self.model.distribution.expect(np.vectorize(rv_loss))
+            return self.model.distribution[index[1]].expect(np.vectorize(rv_loss))
         return np.inf

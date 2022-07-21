@@ -41,12 +41,12 @@ class Simulator:
         self.f_path = []
         self.L_path = []
         self.battery_path = [B_start]
-        # if no realisation of V is given it gets calculated randomly
-        if V_realisation is None:
-            V_realisation = self.model.distribution.rvs(size=T)
         # if no initial value is set it get initialized randomly
         if V_start is None:
             V_start = random.randint(min(self.model.V), max(self.model.V))
+        # if no realisation of V is given it gets calculated randomly
+        if V_realisation is None:
+            V_realisation = self.model.chain.simulate(n=T, start=V_start, ret="states")
         if O_start is None:
             O_start = np.min(self.model.O)
         # random initialisation of the model

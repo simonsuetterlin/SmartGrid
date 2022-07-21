@@ -4,6 +4,7 @@ from src.grid_optimizer import GridOptimizer
 from src.simulation import Simulator
 from src.model import GridModel
 from src.help_functions import *
+from src.markov_chain import chain
 
 # set constants: prices, state-space, decision-space
 # and max expected change rate of consumption
@@ -11,9 +12,9 @@ P_e = 20
 P_i = 10
 P_b = 5
 U = [- np.inf,-2, -1, 0, 1, 2, np.inf] # -inf stands for instant shutdown inf for instant start to 80%
-O = np.arange(0, 16)
-V = np.arange(0, 16)
-B = np.arange(6)
+O = np.arange(0, 12)
+V = np.arange(0, 12)
+B = np.arange(10)
 V_max_change = 4
 B_max_charge = max(B)
 
@@ -44,7 +45,7 @@ def L_e(x0, x1):
 if __name__ == '__main__':
     model1 = GridModel(L_list=[L_i, L_e, L_b], P_i=P_i, P_e=P_e, P_b=P_b,
                        U=U, O=O, V=V, B=B, V_max_change=V_max_change,
-                       distribution="binom")
+                       chain=chain)
     grid_opt1 = GridOptimizer(model1)
     grid_opt1.calculate_cost_to_go_matrix_sequence(depth=5)
 
