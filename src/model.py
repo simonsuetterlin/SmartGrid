@@ -55,6 +55,9 @@ class GridModel:
         self.distribution = []
         for i in range(self.dim_V):
             values = (self.V, self.chain.observed_p_matrix[i])
+            assert len(values[0]) == len(values[1]), (
+                f"MC Transition matrix, doesn't match the dimension of V"
+            )
             self.distribution.append(stats.rv_discrete(values=values))
 
     def L(self, x0, x1):
@@ -88,7 +91,7 @@ class GridModel:
             raise ValueError('Value of the output is out of bounds by current control.')
 
         # prohibits getting out of bounds, based on
-        assert min(self.V) <= v <= max(self.V)
+        assert v in self.V, "v must be in the state-space V."
         v1 = v
         #v1 = min(max(self.V), max(x0[1] + v, min(self.V)))
 

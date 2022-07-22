@@ -18,11 +18,13 @@ kwargs = {
 }
 dataframes = (pd.read_csv(name, **kwargs) for name in names)
 
-data = pd.concat(dataframes, ignore_index=True)
-data.dropna(inplace=True)
 
-data_numeric= pd.to_numeric(data['energy(kWh/hh)'][:1000])
-data_numeric = data_numeric * 11 / np.max(data_numeric)
-data_numeric = data_numeric.astype(int)
+def init_chain(max_output, sample_size=1000):
+    data = pd.concat(dataframes, ignore_index=True)
+    data.dropna(inplace=True)
+    data_numeric= pd.to_numeric(data['energy(kWh/hh)'][:sample_size])
+    data_numeric = data_numeric * (max_output+1) / np.max(data_numeric)
+    np.rint(data_numeric, out=data_numeric)
 
-chain = mc.MarkovChain().from_data(data_numeric)
+    chain = mc.MarkovChain().from_data(data_numeric)
+    return chain

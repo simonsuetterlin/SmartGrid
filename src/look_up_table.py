@@ -54,19 +54,19 @@ def convert_index_to_state(index, state_space):
     return tuple([state_space[i][ind] for i, ind in enumerate(index)])
 
 
-def convert_state_to_index(state, state_space):
+def convert_state_to_index(index, state_space):
     """
     Converts an multi-index to a state of given state space.
     
     Args:
-        state (tuple): Multi Index
+        index (tuple): Multi Index
         state_space (list of lists): 
     
     Returns:
         tuple: a multi-index
     """
-    assert len(state) == len(state_space), (
-        f"The length of given index {len(state)} does not match the dimension "
+    assert len(index) == len(state_space), (
+        f"The length of given index {len(index)} does not match the dimension "
         f"of the state space {len(state_space)}."
     )
-    return tuple([np.where(state_space[i] == value)[0][0] for i, value in enumerate(state)])
+    return tuple([np.where(state_space[i] == value)[0][0] for i, value in enumerate(index)])
