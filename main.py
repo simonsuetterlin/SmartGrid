@@ -8,15 +8,26 @@ from src.markov_chain import init_chain
 
 # set constants: prices, state-space, decision-space
 # and max expected change rate of consumption
-P_e = 20
+P_e = 30
 P_i = 10
 P_b = 5
 U = np.array([- np.inf,-2, -1, 0, 1, 2, np.inf]) # -inf stands for instant shutdown inf for instant start to 80%
-O = np.array([0, 16, 17, 18, 19, 20])#np.arange(0, 12)
+O = np.array([0, 8, 9, 10])#np.arange(0, 12)
 V = np.arange(21)
-B = np.arange(10)
+B = np.arange(25)
 V_max_change = 4
 B_max_charge = max(B)
+
+# instant change of O
+def L_i_instant(x0, x1):
+    return produce_O_instant(x0, x1) * P_i
+
+def L_b_instant(x0, x1):
+    return battery_usage_instant(x0, x1) * P_b
+
+def L_e_instant(x0, x1):
+    return (deficit_O_instant(x0,x1) - battery_usage_instant(x0, x1)) * P_e
+
 
 #factors are efficiency loss at lower output levels
 def L_i(x0, x1):
@@ -44,7 +55,9 @@ def L_e(x0, x1):
 
 if __name__ == '__main__':
     chain = init_chain(np.max(V))
-    model = GridModel(L_list=[L_i, L_e, L_b], P_i=P_i, P_e=P_e, P_b=P_b,
+    
+    #model = GridModel(L_list=[L_i, L_e, L_b], P_i=P_i, P_e=P_e, P_b=P_b,
+    model = GridModel(L_list=[L_i_instant, L_e_instant, L_b_instant], P_i=P_i, P_e=P_e, P_b=P_b,
                        U=U, O=O, V=V, B=B, V_max_change=V_max_change,
                        chain=chain)
     grid_opt = GridOptimizer(model)

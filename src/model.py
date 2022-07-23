@@ -1,6 +1,6 @@
 from scipy import stats
 import numpy as np
-from src.help_functions import battery_usage, overflow_O
+from src.help_functions import *
 from src.look_up_table import convert_index_to_state, convert_state_to_index
 
 
@@ -72,7 +72,7 @@ class GridModel:
         L_eval = np.array([l(x0, x1) for l in self.L_list])
         assert np.all(L_eval >= 0), "LOSS NEGATIVE, {}".format(L_eval)
         return L_eval.sum()
-
+    
     def f(self, x0, u, v):
         """
         Calculates next state based on current state, decision and new consum.
@@ -89,11 +89,27 @@ class GridModel:
         # prohibits stearing out of bounds!
         if o1 not in self.O:
             raise ValueError('Value of the output is out of bounds by current control.')
-
+        
+        
         # prohibits getting out of bounds, based on
-        assert v in self.V, "v must be in the state-space V."
+        assert v in self.V, (
+            f"The new state v must be in the state-space V!\n"
+            f"v={v} ist not in V={self.V}"
+        )
         v1 = v
         #v1 = min(max(self.V), max(x0[1] + v, min(self.V)))
+
+        overflow = overflow_O_instant(x0, (o1, v1, 0))
+        battery_used = battery_usage_instant(x0, (o1, v1, 0))
+        # calculates new battery charge:
+        # current state + overflow of own power plant - drain of battery
+        # but respecting that it can't be overcharged
+        # for simplicity b1 is kept as integer. Since there is loss
+        # when charging we always round to the smaller integer.
+        b1 = int(min(x0[2] + overflow - battery_used, self.B_max_charge))
+
+        return (o1, v1, b1)
+        '''
 
         overflow = sum(overflow_O(x0, (o1, v1, 0)))
         battery_used = battery_usage(x0, (o1, v1, 0), self.B_max_charge)
@@ -105,6 +121,7 @@ class GridModel:
         b1 = int(min(x0[2] + overflow - battery_used, max(self.B)))
 
         return (o1, v1, b1)
+        '''
 
     def get_new_u(self, o0, u):
         """

@@ -81,7 +81,7 @@ class Simulator:
         fig, axs = plt.subplots(5, 1, dpi=100, figsize=(20, 9))
         t = np.arange(len(self.L_path) + 1)
         # Path of O and V
-        axs[0].plot(t, [i[0] for i in self.f_path], label="O")
+        axs[0].step(t, [i[0] for i in self.f_path], label="O")
         axs[0].step(t, [i[1] for i in self.f_path], label="V")
         # axs[0].step(t, self.battery_output, label="B")
         axs[0].set_ylabel('O and V path')
