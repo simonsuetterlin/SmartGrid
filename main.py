@@ -1,17 +1,21 @@
 # from rk4step import rk4step
 import numpy as np
 import pickle
-
 from sqlalchemy import false
+from yaml import load
 from src.grid_optimizer import GridOptimizer
 from src.simulation import Simulator
 from src.model import GridModel
 from src.help_functions import *
 from src.markov_chain import init_chain
 
-LOAD_OPTIMIZER = True
-save_name = "test"
-load_name = "test"
+LOAD_OPTIMIZER = False
+load_name = "model_smaller_output"
+
+SAVE_OPTIMIZER = False
+save_name = "model_smaller_output"
+
+USE_REAL_DATA = True
 
 # set constants: prices, state-space, decision-space
 # and max expected change rate of consumption
@@ -19,18 +23,21 @@ P_e = 30
 P_i = 10
 P_b = 5
 U = np.array([- np.inf,-2, -1, 0, 1, 2, np.inf]) # -inf stands for instant shutdown inf for instant start to 80%
-O = np.array([0, 8, 9, 10, 11, 12, 13, 14])#np.arange(0, 12)
-V = np.arange(5)#21)
-B = np.arange(10)
+O = np.array([0, 3, 4, 5, 6, 7, 8]) #np.arange(0, 12)
+V = np.arange(21)
+B = np.arange(5)
 V_max_change = 4
 B_max_charge = max(B)
 
 # instant change of O
 def L_i_instant(x0, x1):
-    split_O_into_two = [O[i:i+int(len(O)/2)+1] for i in range(0, len(O), int(len(O)/2)+1)]
+    # split_O_into_two = [O[i:i+int(len(O)/2)+1] for i in range(0, len(O), int(len(O)/2)+1)]
     prod_O=produce_O_instant(x0, x1)
     if x0[0] == 0:
         return prod_O * P_i * 1.5
+    else:
+        return prod_O * P_i
+    """
     elif x0[0] in split_O_into_two[0]:
         return prod_O * P_i * 1.25
     elif x0[0] in split_O_into_two[1]:
@@ -38,7 +45,8 @@ def L_i_instant(x0, x1):
     else:
         raise ValueError("x0[0] not in O split array")
 
-    # return produce_O_instant(x0, x1) * P_i
+     return produce_O_instant(x0, x1) * P_i
+    """
 
 def L_b_instant(x0, x1):
     return battery_usage_instant(x0, x1) * P_b
@@ -71,11 +79,11 @@ def L_e(x0, x1):
     return (deficit_O(x0, x1) - battery_usage(x0, x1, B_max_charge)) * P_e
 
 def save_optimizer(optimizer, name):
-    with open(f'./model_weights/{name}.pkl', 'wb') as outp:
+    with open(f'./optimizer_weights/{name}.pkl', 'wb') as outp:
         pickle.dump(optimizer, outp, pickle.HIGHEST_PROTOCOL)
 
 def load_optimizer(name):
-    with open(f'./model_weights/{name}.pkl', 'rb') as inp:
+    with open(f'./optimizer_weights/{name}.pkl', 'rb') as inp:
         grid_opt = pickle.load(inp)
     return grid_opt
 
@@ -89,20 +97,25 @@ if __name__ == '__main__':
                         chain=chain)
         grid_opt = GridOptimizer(model)
         grid_opt.calculate_cost_to_go_matrix_sequence(depth=5)
-
-        save_optimizer(grid_opt, save_name)
+        if SAVE_OPTIMIZER:
+            save_optimizer(grid_opt, save_name)
     else:
+        print(f"Load model file {load_name}...", end='\r')
         grid_opt = load_optimizer(load_name)
+        print(f"Model {load_name} loaded and ready to go.\t\t\t\t")
+
+    print(grid_opt.opt_dec_m)
+    print(grid_opt.cost_to_go_m)
 
     # simulate model
     s = Simulator(grid_opt.model, grid_opt.opt_dec_m)
-    s.simulate(T=100)
+    s.simulate(T=150, real_data=USE_REAL_DATA)
     s.plot_path()
 
     def simulate(s):
         new_simulation = input("Input an integer n for new simulation of length n: ")
         if new_simulation.isdigit():
-            s.simulate(T=int(new_simulation))
+            s.simulate(T=int(new_simulation), real_data=USE_REAL_DATA)
             s.plot_path()
             simulate(s)
 

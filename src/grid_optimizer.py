@@ -58,7 +58,7 @@ class GridOptimizer:
                 if (i != 0):
                     M[i % 2], choice = self.calculate_cost_to_go_matrix(M[(i - 1) % 2])
                 else:
-                    if self.cost_to_go_m:
+                    if self.cost_to_go_m is not None:
                         M[0] = self.cost_to_go_m
                     else:
                         M[0] = self.calculate_cost_to_go_matrix_final_step()

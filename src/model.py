@@ -130,7 +130,7 @@ class GridModel:
         if u == -np.inf:
             u = -o0
         elif u == np.inf and o0 == 0:
-            u = int(0.8 * np.max(self.O))
+            u = int(0.6 * np.max(self.O))
         return u
 
     def index_to_state(self, index):
