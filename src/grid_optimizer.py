@@ -76,8 +76,9 @@ class GridOptimizer:
         Returns:
             matrix with terminal costs
         """
-        # initialize matrix
-        M = np.zeros(self.model.dim, dtype=float)
+        # adds cost to charge the batery to max charge
+        f = lambda index: (self.model.B_max_charge -  self.model.B[index[2]]) * self.model.P_i
+        M = np.vectorize(f)(look_up_table(self.model.dim))
         return M
 
     def calculate_cost_to_go_matrix(self, cost_matrix):

@@ -104,9 +104,6 @@ if __name__ == '__main__':
         grid_opt = load_optimizer(load_name)
         print(f"Model {load_name} loaded and ready to go.\t\t\t\t")
 
-    print(grid_opt.opt_dec_m)
-    print(grid_opt.cost_to_go_m)
-
     # simulate model
     s = Simulator(grid_opt.model, grid_opt.opt_dec_m)
     s.simulate(T=150, real_data=USE_REAL_DATA)
