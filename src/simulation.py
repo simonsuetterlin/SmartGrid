@@ -57,7 +57,7 @@ class Simulator:
                 V_realisation = self.model.chain.simulate(n=T, start=V_start, ret="states")
             else:
                 data_numeric = get_data_numeric(max(self.model.V))
-                start = np.random.randint(1000, 10000)
+                start = np.random.randint(0, 24000)
                 V_realisation = np.array(data_numeric[start:start+T])
                 V_start = V_realisation[0]
 

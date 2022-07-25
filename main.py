@@ -23,7 +23,7 @@ P_e = 30
 P_i = 10
 P_b = 5
 U = np.array([- np.inf,-2, -1, 0, 1, 2, np.inf]) # -inf stands for instant shutdown inf for instant start to 80%
-O = np.array([0, 3, 4, 5, 6, 7, 8]) #np.arange(0, 12)
+O = np.array([0, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]) #np.arange(0, 12)
 V = np.arange(21)
 B = np.arange(5)
 V_max_change = 4
@@ -31,22 +31,16 @@ B_max_charge = max(B)
 
 # instant change of O
 def L_i_instant(x0, x1):
-    # split_O_into_two = [O[i:i+int(len(O)/2)+1] for i in range(0, len(O), int(len(O)/2)+1)]
+    split_O_into_two = [O[i:i+int(len(O)/2)+1] for i in range(0, len(O), int(len(O)/2)+1)]
     prod_O=produce_O_instant(x0, x1)
     if x0[0] == 0:
         return prod_O * P_i * 1.5
-    else:
-        return prod_O * P_i
-    """
     elif x0[0] in split_O_into_two[0]:
         return prod_O * P_i * 1.25
     elif x0[0] in split_O_into_two[1]:
         return prod_O * P_i
     else:
         raise ValueError("x0[0] not in O split array")
-
-     return produce_O_instant(x0, x1) * P_i
-    """
 
 def L_b_instant(x0, x1):
     return battery_usage_instant(x0, x1) * P_b
