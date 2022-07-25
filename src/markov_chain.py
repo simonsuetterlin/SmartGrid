@@ -1,7 +1,5 @@
 import pandas as pd
 import numpy as np
-import scipy.stats as ss
-import matplotlib.pyplot as plt
 import mchmm as mc
 
 
@@ -51,11 +49,11 @@ def get_data_numeric(max_output):
     max_summed_values = max(summed_values_float)
     summed_values_scaled = np.array([max_output * summed_values_float[i]/ max_summed_values for i in range(len(summed_values_float))])
 
-    # convert to int
-    return summed_values_scaled.astype(int)
+    # convert to int, timepoints, new number of houses
+    return summed_values_scaled.astype(int), new_timepoints_with_certain_length[0], int(max_output / max_summed_values * len(values))
 
 def init_chain(max_output):
-    data_numeric = get_data_numeric(max_output)
+    data_numeric, _, _ = get_data_numeric(max_output)
     # if a value is not in the data it needs to be added so there is no error in the markov chain
     data_numeric = np.append(data_numeric, range(max_output + 1))
     chain = mc.MarkovChain().from_data(data_numeric)
