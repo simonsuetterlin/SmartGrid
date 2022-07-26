@@ -23,7 +23,7 @@ P_b = P_i * 0.25
 U = np.array([- np.inf,-2, -1, 0, 1, 2, np.inf]) # -inf stands for instant shutdown inf for instant start to 80%
 O = np.array([0, 10, 11, 12, 13, 14, 15]) #np.arange(0, 12)
 V = np.arange(21)
-B = np.arange(10)
+B = np.arange(11)
 V_max_change = 4
 B_max_charge = max(B)
 
