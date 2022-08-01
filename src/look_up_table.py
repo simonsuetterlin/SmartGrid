@@ -4,7 +4,7 @@ import numpy as np
 def look_up_table(dim):
     """
     Calculates a look up table.
-    Each entree of this matrix is exactly the tuple
+    Each entry of this matrix is exactly the tuple
     with which it can be accesed by.
     
     Args:
