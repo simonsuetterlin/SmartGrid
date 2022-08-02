@@ -16,10 +16,14 @@ M = grid_opt.cost_to_go_m
 #show the costs to go for the different states.
 #
 
+
+
+          
+
 while True:
     print('Enter a value for the consumption state:')
     c = int(input())
-    if c not in [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]:
+    if c not in np.arange(21):
         raise ValueError('Wrong input!')
     else:
         fig = plt.figure()
@@ -33,8 +37,9 @@ while True:
         axes.set_xlabel('Battery state')
         axes.set_ylabel('Output state')
         plt.title('The costs to go for different Battery and Power\nplant states with consumption state '+str(c))
-        plt.show()
-
+        plt.pause(100)
+    
+  
 
 
 
