@@ -12,11 +12,28 @@ load_name = "model"
 grid_opt = load_optimizer(load_name)
 
 
+def array_to_matrix(array):
+    begin = '\\begin{pmatrix} \n'
+    data = ''
+    for line in array:        
+        if line.size == 1:
+            data = data + ' %.3f &'%line
+            data = data + r' \\'
+            data = data + '\n'
+            continue
+        for element in line:
+            data = data + ' %.3f &'%element
+
+        data = data + r' \\'
+        data = data + '\n'
+    end = '\end{pmatrix}'
+    print(begin + data + end)
+
 chain = grid_opt.model.chain
-print(chain.observed_p_matrix)
+array_to_matrix(chain.observed_p_matrix)
 fig = plt.figure()
 axes = fig.add_subplot(111)
-caxes = axes.matshow(chain.observed_p_matrix, cmap = 'magma')
+caxes = axes.matshow(chain.observed_p_matrix, cmap = 'cividis')
 fig.colorbar(caxes)
 plt.title('Transition matrix for the Markov chain, calculated from real data')
 axes.set_xlabel('Consumption in the next state')
