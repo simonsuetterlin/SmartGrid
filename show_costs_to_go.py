@@ -28,10 +28,11 @@ while True:
     else:
         fig = plt.figure()
         axes = fig.add_subplot(111)
-        caxes = axes.matshow(M[:,c,:])
+        caxes = axes.matshow(M[:,c,:],cmap = 'RdYlGn_r')
         fig.colorbar(caxes)
         axes.set_xticks(grid_opt.model.B)
         axes.set_xticklabels(grid_opt.model.B)
+        axes.xaxis.set_ticks_position("bottom")
         axes.set_yticks(np.arange(len(grid_opt.model.O)))
         axes.set_yticklabels(grid_opt.model.O)
         axes.set_xlabel('Battery state')
