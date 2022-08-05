@@ -30,12 +30,13 @@ def array_to_matrix(array):
     print(begin + data + end)
 
 chain = grid_opt.model.chain
-array_to_matrix(chain.observed_p_matrix)
+#array_to_matrix(chain.observed_p_matrix)
 fig = plt.figure()
 axes = fig.add_subplot(111)
-caxes = axes.matshow(chain.observed_p_matrix, cmap = 'cividis')
+caxes = axes.matshow(chain.observed_p_matrix)
 fig.colorbar(caxes)
-plt.title('Transition matrix for the Markov chain, calculated from real data')
+plt.title('Transition matrix for the Markov chain,\ncalculated from real data')
 axes.set_xlabel('Consumption in the next state')
+axes.xaxis.set_ticks_position("bottom")
 axes.set_ylabel('Consumption in this state')
 plt.show()
