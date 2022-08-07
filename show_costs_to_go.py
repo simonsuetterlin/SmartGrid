@@ -31,14 +31,14 @@ while True:
         caxes = axes.matshow(M[:,c,:],cmap = 'RdYlGn_r')
         fig.colorbar(caxes)
         axes.set_xticks(grid_opt.model.B)
-        axes.set_xticklabels(grid_opt.model.B)
+        axes.set_xticklabels(grid_opt.model.B, fontsize = 12)
         axes.xaxis.set_ticks_position("bottom")
         axes.set_yticks(np.arange(len(grid_opt.model.O)))
-        axes.set_yticklabels(grid_opt.model.O)
-        axes.set_xlabel('Battery state')
-        axes.set_ylabel('Output state')
-        plt.title('The costs to go for different Battery and Power\nplant states with consumption state '+str(c))
-        plt.pause(100)
+        axes.set_yticklabels(grid_opt.model.O, fontsize = 12)
+        axes.set_xlabel('Battery state', fontsize = 12)
+        axes.set_ylabel('Output state', fontsize = 12)
+        plt.title('The costs to go for different Battery and Power\nplant states with consumption state '+str(c), fontsize = 13)
+        plt.show()
     
   
 
