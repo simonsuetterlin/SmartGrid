@@ -1,4 +1,3 @@
-# from rk4step import rk4step
 import numpy as np
 import pickle
 from src.grid_optimizer import GridOptimizer
@@ -20,17 +19,25 @@ USE_REAL_DATA = True
 P_i = 170
 P_e = 2 * P_i
 P_b = P_i * 0.25
-U = np.array([- np.inf,-2, -1, 0, 1, 2, np.inf]) # -inf stands for instant shutdown inf for instant start to 80%
-O = np.array([0, 10, 11, 12, 13, 14, 15]) #np.arange(0, 12)
+U = np.array([- np.inf, -2, -1, 0, 1, 2, np.inf])  # -inf stands for instant shutdown inf for instant start to 80%
+O = np.array([0, 10, 11, 12, 13, 14, 15])
 V = np.arange(21)
 B = np.arange(11)
 V_max_change = 4
 B_max_charge = max(B)
 
-# instant change of O
-def L_i_instant(x0, x1):
-    split_O_into_two = [O[i:i+int(len(O)/2)+1] for i in range(0, len(O), int(len(O)/2)+1)]
-    prod_O=produce_O_instant(x0, x1)
+
+def L_i(x0, x1):
+    """
+    Calculates loss/ costs of O (the internal power plant) for the interval defined by the given parameters.
+
+    Args:
+        x0: current state
+        x1: next state
+    """
+    split_O_into_two = [O[i:i + int(len(O) / 2) + 1] for i in range(0, len(O), int(len(O) / 2) + 1)]
+    prod_O = produce_O_instant(x1)
+    # the power plant is more ineficcient if it produces less energy -> increase the price at lower settings
     if x0[0] == 0:
         return prod_O * P_i * 2
     elif x0[0] in split_O_into_two[0]:
@@ -40,16 +47,33 @@ def L_i_instant(x0, x1):
     else:
         raise ValueError("x0[0] not in O split array")
 
-def L_b_instant(x0, x1):
+
+def L_b(x0, x1):
+    """
+    Calculates loss/ costs of B (the battery) for the interval defined by the given parameters.
+
+    Args:
+        x0: current state
+        x1: next state
+    """
     return battery_usage_instant(x0, x1) * P_b
 
-def L_e_instant(x0, x1):
-    return (deficit_O_instant(x0,x1) - battery_usage_instant(x0, x1)) * P_e
+
+def L_e(x0, x1):
+    """
+    Calculates loss/ costs of E (the external electricity source) for the interval defined by the given parameters.
+
+    Args:
+        x0: current state
+        x1: next state
+    """
+    return (deficit_O_instant(x1) - battery_usage_instant(x0, x1)) * P_e
 
 
 def save_optimizer(optimizer, name):
     with open(f'./optimizer_weights/{name}.pkl', 'wb') as outp:
         pickle.dump(optimizer, outp, pickle.HIGHEST_PROTOCOL)
+
 
 def load_optimizer(name):
     with open(f'./optimizer_weights/{name}.pkl', 'rb') as inp:
@@ -59,11 +83,12 @@ def load_optimizer(name):
 
 if __name__ == '__main__':
     if not LOAD_OPTIMIZER:
+        # solve optimal control problem
         chain = init_chain(np.max(V))
-        
-        model = GridModel(L_list=[L_i_instant, L_e_instant, L_b_instant], P_i=P_i, P_e=P_e, P_b=P_b,
-                        U=U, O=O, V=V, B=B, V_max_change=V_max_change,
-                        chain=chain)
+
+        model = GridModel(L_list=[L_i, L_e, L_b], P_i=P_i, P_e=P_e, P_b=P_b,
+                          U=U, O=O, V=V, B=B, V_max_change=V_max_change,
+                          chain=chain)
         grid_opt = GridOptimizer(model)
         grid_opt.calculate_cost_to_go_matrix_sequence(depth=5)
         if SAVE_OPTIMIZER:
@@ -78,6 +103,7 @@ if __name__ == '__main__':
     s.simulate(T=150, real_data=USE_REAL_DATA)
     s.plot_path()
 
+
     def simulate(s):
         new_simulation = input("Input an integer n for new simulation of length n: ")
         if new_simulation.isdigit():
@@ -85,5 +111,6 @@ if __name__ == '__main__':
             s.plot_path()
             simulate(s)
 
-    simulate(s)
 
+    # enable to simulate multiple times after a run is done
+    simulate(s)

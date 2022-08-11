@@ -55,7 +55,7 @@ class GridOptimizer:
             depth_to_go = depth - self.iter_depth + 1
             for i in range(depth_to_go):
                 print(f"{f'Reached depth {i} from {depth_to_go - 1}:':<25}\t {100. * i / depth_to_go:5.1f}%", end="\r")
-                if (i != 0):
+                if i != 0:
                     M[i % 2], choice = self.calculate_cost_to_go_matrix(M[(i - 1) % 2])
                 else:
                     if self.cost_to_go_m is not None:
@@ -77,7 +77,7 @@ class GridOptimizer:
             matrix with terminal costs
         """
         # adds cost to charge the batery to max charge
-        f = lambda index: (self.model.B_max_charge -  self.model.B[index[2]]) * self.model.P_i
+        f = lambda index: (self.model.B_max_charge - self.model.B[index[2]]) * self.model.P_i
         M = np.vectorize(f)(look_up_table(self.model.dim))
         return M
 

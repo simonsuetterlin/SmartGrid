@@ -1,9 +1,9 @@
 import unittest
-from code.grid_optimizer import *
-from code.model import *
-from code.simulation import *
-from code.help_functions import *
-from code.look_up_table import look_up_table, convert_index_to_state, convert_state_to_index
+from src.grid_optimizer import *
+from src.model import *
+from src.simulation import *
+from src.help_functions import *
+from src.look_up_table import look_up_table, convert_index_to_state, convert_state_to_index
 from main import *
 
 # set constants: prices, state-space, decision-space
